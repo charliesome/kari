@@ -3,9 +3,30 @@
 
 #include "kari.h"
 
-typedef kari_value_t*(*kari_nfn_t)(void*,kari_value_t*,char**);
-#define K_FN(name) kari_value_t* kari_stdlib_##name(void* state, kari_value_t* argument, char** err)
+#ifndef K_FN
+    #define K_REF(name) kari_stdlib_##name
+    #define K_FN(name) kari_value_t* K_REF(name)(void* state, kari_value_t* argument, char** err)
+#endif
 
-K_FN(hello);
+/* math */
+K_FN(add);
+K_FN(sub);
+K_FN(mul);
+K_FN(div);
+K_FN(mod);
+K_FN(odd);
+K_FN(even);
+K_FN(floor);
+K_FN(ceil);
+K_FN(sin);
+K_FN(cos);
+K_FN(tan);
+/*K_FN(asin);*/
+/*K_FN(acos);*/
+/*K_FN(atan);*/
+/*K_FN(exp);*/
+
+/* system */
+K_FN(quit);
 
 #endif

@@ -12,18 +12,13 @@ kari_context_t* kari_create_std_context()
     return ctx;
 }
 
-static kari_native_function_t* kari_create_native_function(kari_nfn_t fn)
-{
-    kari_native_function_t* f = GC_MALLOC(sizeof(kari_native_function_t));
-    f->base.type = KARI_NATIVE_FUNCTION;
-    f->call = fn;
-    return f;
-}
-
-#define EXPOSE(fn) kari_dict_add(context->variables, #fn, kari_create_native_function(kari_stdlib_##fn))
+#define EXPOSE(fn) kari_dict_add(context->variables, #fn, kari_create_native_function(kari_stdlib_##fn, NULL))
 void kari_load_stdlib(kari_context_t* context)
 {
-    EXPOSE(hello);
+    #undef K_FN
+    #undef _KARI_STDLIB
+    #define K_FN(fn) EXPOSE(fn)
+    #include "kari_stdlib.h"
 }
 
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err)

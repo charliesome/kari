@@ -48,8 +48,15 @@ int main()
     }
     */
     while(true) {
+        if(feof(stdin)) {
+            break;
+        }
         printf(">> ");
-        tokens_count = kari_parse(readline(), &tokens, &err);
+        src = readline();
+        if(src[0] == 0) {
+            continue;
+        }
+        tokens_count = kari_parse(src, &tokens, &err);
         if(err) {
             printf("Parse error: %s\n", err);
             continue;

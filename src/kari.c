@@ -11,6 +11,25 @@ kari_value_t* kari_nil()
     return &k_nil;
 }
 
+static kari_value_t k_true;
+kari_value_t* kari_true()
+{
+    k_nil.type = KARI_TRUE;
+    return &k_true;
+}
+
+static kari_value_t k_false;
+kari_value_t* kari_false()
+{
+    k_nil.type = KARI_FALSE;
+    return &k_false;
+}
+
+kari_value_t* kari_boolean(bool boolean)
+{
+    return (boolean ? kari_true : kari_false)();
+}
+
 char* kari_string_for_value_type_t(kari_value_type_t t)
 {
     switch(t) {
@@ -65,4 +84,30 @@ char* kari_inspect(kari_value_t* value)
         default:
             return "(unknown type)";
     }
+}
+
+kari_number_t* kari_create_number(double number)
+{
+    kari_number_t* n = GC_MALLOC(sizeof(kari_number_t));
+    n->base.type = KARI_NUMBER;
+    n->number = number;
+    return n;
+}
+
+kari_string_t* kari_create_string(char* str, size_t len)
+{
+    kari_string_t* s = GC_MALLOC(sizeof(kari_string_t));
+    s->base.type = KARI_STRING;
+    s->str = str;
+    s->len = len;
+    return s;
+}
+
+kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state)
+{
+    kari_native_function_t* f = GC_MALLOC(sizeof(kari_native_function_t));
+    f->base.type = KARI_NATIVE_FUNCTION;
+    f->state = state;
+    f->call = fn;
+    return f;
 }

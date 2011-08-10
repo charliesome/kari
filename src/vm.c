@@ -41,6 +41,18 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     ((kari_string_t*)value)->str = ((kari_string_token_t*)tokens[i])->str;
                     ((kari_string_t*)value)->len = ((kari_string_token_t*)tokens[i])->len;
                     break;
+                case KARI_TOK_NIL:
+                    value = kari_nil();
+                    break;
+                case KARI_TOK_TRUE:
+                    value = kari_true();
+                    break;
+                case KARI_TOK_FALSE:
+                    value = kari_false();
+                    break;
+                default:
+                    *err = "Internal error (unknown token)";
+                    return NULL;
             }
             i++;
         }
