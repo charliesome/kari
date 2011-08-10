@@ -1,0 +1,6 @@
+.deps/*
+deps/gc/.libs
+*.o
+*.lo
+*.a
+*.la
