@@ -21,10 +21,10 @@ K_FN(ceil);
 K_FN(sin);
 K_FN(cos);
 K_FN(tan);
-/*K_FN(asin);*/
-/*K_FN(acos);*/
-/*K_FN(atan);*/
-/*K_FN(exp);*/
+K_FN(asin);
+K_FN(acos);
+K_FN(atan);
+K_FN(exp);
 
 /* system */
 K_FN(quit);

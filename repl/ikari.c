@@ -35,18 +35,6 @@ int main()
     printf("Interactive Kari\n\n");
     ctx = kari_create_std_context();
     
-    /*
-    tokens_count = kari_parse("hello 123e4", &tokens, &err);
-    if(err) {
-        printf("Parse error: %s\n", err);
-        exit(1);
-    }
-    value = kari_execute(ctx, tokens, tokens_count, &err);
-    if(err) {
-        printf("Runtime error: %s\n", err);
-        exit(1);
-    }
-    */
     while(true) {
         if(feof(stdin)) {
             break;
