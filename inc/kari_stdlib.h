@@ -27,6 +27,7 @@ K_FN(atan);
 K_FN(exp);
 
 /* system */
+K_FN(inspect);
 K_FN(quit);
 
 #endif

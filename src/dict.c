@@ -28,14 +28,15 @@ kari_dict_t* new_kari_dict(uint32_t(*hash_fn)(void*))
     return d;
 }
 
-bool kari_dict_add(kari_dict_t* dict, void* key, void* value)
+bool kari_dict_set(kari_dict_t* dict, void* key, void* value)
 {
     if(dict->entries_count == dict->entries_capacity) {
         dict->entries_capacity *= 2;
-        dict->entries = GC_REALLOC(dict->entries, dict->entries_capacity);
+        dict->entries = GC_REALLOC(dict->entries, sizeof(kari_dict_entry_t) * dict->entries_capacity);
     }
     if(kari_dict_exists(dict, key)) {
-        return false;
+        kari_dict_find(dict, key)->value = value;
+        return true;
     }
     dict->entries[dict->entries_count].hash = dict->hash_fn(key);
     dict->entries[dict->entries_count].key = key;

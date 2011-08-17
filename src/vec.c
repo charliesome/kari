@@ -16,7 +16,7 @@ void kari_vec_push(kari_vec_t* v, void* obj)
 {
     if(v->count == v->capacity) {
         v->capacity *= 2;
-        v->entries = GC_REALLOC(v->entries, v->capacity);
+        v->entries = GC_REALLOC(v->entries, sizeof(void*) * v->capacity);
     }
     v->entries[v->count++] = obj;
 }
@@ -28,7 +28,7 @@ void* kari_vec_pop(kari_vec_t* v)
     }
     if(v->count == v->capacity / 2) {
         v->capacity /= 2;
-        v->entries = GC_REALLOC(v->entries, v->capacity);
+        v->entries = GC_REALLOC(v->entries, sizeof(void*) * v->capacity);
     }
     return v->entries[--v->count];
 }
@@ -44,6 +44,6 @@ void kari_vec_remove(kari_vec_t* v, size_t offset)
     v->count--;
     if(v->count == v->capacity / 2) {
         v->capacity /= 2;
-        v->entries = GC_REALLOC(v->entries, v->capacity);
+        v->entries = GC_REALLOC(v->entries, sizeof(void*) * v->capacity);
     }
 }

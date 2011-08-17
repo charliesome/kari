@@ -21,7 +21,7 @@ typedef struct kari_dict {
 uint32_t kari_dict_string_hash(void*);
 
 kari_dict_t* new_kari_dict(uint32_t(*hash_fn)(void*));
-bool kari_dict_add(kari_dict_t* dict, void* key, void* value);
+bool kari_dict_set(kari_dict_t* dict, void* key, void* value);
 bool kari_dict_exists(kari_dict_t* dict, void* key);
 void kari_dict_remove(kari_dict_t* dict, void* key);
 kari_dict_entry_t* kari_dict_find(kari_dict_t* dict, void* key);

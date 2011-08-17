@@ -18,6 +18,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     kari_token_t* tmp_tok;
     char *tmp_s, *tmp_endptr;
     double d;
+    bool is_after_assignment = false;
+    
     while(i < source_len) {
         if(isspace(source[i])) {
             i++;
@@ -33,16 +35,54 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             tmp_s[i - identifier_start] = 0;
             
             tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
-            tmp_tok->type = KARI_TOK_IDENTIFIER;
+            tmp_tok->type = (is_after_assignment ? KARI_TOK_ASSIGN_TO_IDENTIFIER : KARI_TOK_IDENTIFIER);
             ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
             ((kari_identifier_token_t*)tmp_tok)->len = i - identifier_start;
             kari_vec_push(tokens, tmp_tok);
             
+            is_after_assignment = false;
+            continue;
+        }
+        if(is_after_assignment) {
+            *err = "Expected identifier after assignment operator";
+            return 0;
+        }
+        if(source[i] == '=' && i + 1 < source_len && source[i+1] == '>') {
+            if(tokens->count == 0) {
+                *err = "Expression must precede assignment operator";
+                return 0;
+            }
+            is_after_assignment = true;
+            i += 2;
+            continue;
+        }
+        /* '*' or '/' shorthand */
+        if(source[i] == '*' || source[i] == '/') {
+            tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
+            tmp_tok->type = KARI_TOK_IDENTIFIER;
+            ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
+            ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '*' ? "mul" : "div");
+            ((kari_identifier_token_t*)tmp_tok)->len = 3;
+            kari_vec_push(tokens, tmp_tok);
+            ++i;
             continue;
         }
         /* number */
         if(source[i] == '+' || source[i] == '-' || isdigit(source[i])) {
+            if(source[i] == '+' || source[i] == '-') {
+                if(i + 1 == source_len || !(isdigit(source[i+1]) || source[i+1] == '.')) {
+                    /* + and - are legal shorthand characters for add and sub */
+                    tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
+                    tmp_tok->type = KARI_TOK_IDENTIFIER;
+                    ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
+                    ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '+' ? "add" : "sub");
+                    ((kari_identifier_token_t*)tmp_tok)->len = 3;
+                    kari_vec_push(tokens, tmp_tok);
+                    ++i;
+                    continue;
+                }
+            }
             tmp_endptr = NULL;
             d = strtod(source + i, &tmp_endptr);
             i = tmp_endptr - source;
@@ -111,8 +151,13 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             continue;
         }
         
+    /*illegal_char:*/
         *err = GC_MALLOC(64);
         sprintf(*err, "Illegal character '%c'", source[i]);
+        return 0;
+    }    
+    if(is_after_assignment) {
+        *err = "Expected identifier after => operator";
         return 0;
     }
     *err = NULL;

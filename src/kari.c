@@ -60,7 +60,7 @@ char* kari_inspect(kari_value_t* value)
                     s_cap *= 2;
                     s = GC_REALLOC(s, s_cap);
                 }
-                if(((kari_string_t*)value)->str[i] == '"') {
+                if(((kari_string_t*)value)->str[i] == '"' || ((kari_string_t*)value)->str[i] == '\\') {
                     s[s_len++] = '\\';
                 }
                 s[s_len++] = ((kari_string_t*)value)->str[i];
@@ -94,12 +94,12 @@ kari_number_t* kari_create_number(double number)
     return n;
 }
 
-kari_string_t* kari_create_string(char* str, size_t len)
+kari_string_t* kari_create_string(char* str)
 {
     kari_string_t* s = GC_MALLOC(sizeof(kari_string_t));
     s->base.type = KARI_STRING;
     s->str = str;
-    s->len = len;
+    s->len = strlen(str);
     return s;
 }
 

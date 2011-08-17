@@ -23,7 +23,9 @@ typedef enum kari_token_type {
     KARI_TOK_IDENTIFIER,
     KARI_TOK_STRING,
     KARI_TOK_TRUE,
-    KARI_TOK_FALSE
+    KARI_TOK_FALSE,
+    KARI_TOK_ASSIGN_TO_IDENTIFIER,
+    KARI_TOK_FUNCTION,
 } kari_token_type_t;
 
 typedef struct kari_token {
@@ -47,6 +49,12 @@ typedef struct kari_string_token {
     char* str;
     size_t len;
 } kari_string_token_t;
+
+typedef struct kari_function_token {
+    kari_token_t base;
+    char* argument;
+    kari_vec_t* tokens;
+} kari_function_token_t;
 
 /*
 // RUNTIME VALUES
@@ -107,7 +115,7 @@ char* kari_string_for_value_type_t(kari_value_type_t t);
 char* kari_inspect(kari_value_t* value);
 
 kari_number_t* kari_create_number(double number);
-kari_string_t* kari_create_string(char* str, size_t len);
+kari_string_t* kari_create_string(char* str);
 kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state);
 
 #endif

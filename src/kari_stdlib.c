@@ -152,3 +152,9 @@ K_FN(quit)
     }
     exit((int)((kari_number_t*)argument)->number);
 }
+
+/* inspect */
+K_FN(inspect)
+{
+    return (kari_value_t*)kari_create_string(kari_inspect(argument));
+}
