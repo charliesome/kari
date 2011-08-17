@@ -9,6 +9,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
     kari_vec_t* function_stack = new_kari_vec();
     kari_value_t* value = NULL;
     kari_context_t* lookup_ctx;
+    kari_function_t* tmp_fun;
     size_t i = 0;
     while(i < token_count || function_stack->count > 0) {
         if(i < token_count) {
@@ -50,7 +51,19 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     }
                     kari_dict_set(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str, value);
                     break;
-                    
+                
+                
+                case KARI_TOK_FUNCTION:
+                    tmp_fun = GC_MALLOC(sizeof(kari_function_t));
+                    tmp_fun->base.type = KARI_FUNCTION;
+                    tmp_fun->parent = ctx;
+                    tmp_fun->argument = (((kari_function_token_t*)tokens[i])->argument != NULL ? ((kari_function_token_t*)tokens[i])->argument : "");
+                    tmp_fun->tokens = (kari_token_t**)((kari_function_token_t*)tokens[i])->tokens->entries;
+                    tmp_fun->token_count = ((kari_function_token_t*)tokens[i])->tokens->count;
+                    value = (kari_value_t*)tmp_fun;
+                    tmp_fun = NULL;
+                    break;
+                
                     
                 case KARI_TOK_NUMBER:
                     value = GC_MALLOC(sizeof(kari_number_t));

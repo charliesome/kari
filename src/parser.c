@@ -12,13 +12,17 @@ static bool is_identifier_char(char c, bool first) {
 
 size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
 {
+    kari_vec_t* tokens_stack = new_kari_vec();
     kari_vec_t* tokens = new_kari_vec();
     size_t source_len = strlen(source);
     size_t i = 0, identifier_start, cap, len;
     kari_token_t* tmp_tok;
+    kari_vec_t* tmp_vec;
     char *tmp_s, *tmp_endptr;
     double d;
     bool is_after_assignment = false;
+    
+    kari_vec_push(tokens_stack, tokens);
     
     while(i < source_len) {
         if(isspace(source[i])) {
@@ -56,6 +60,34 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             is_after_assignment = true;
             i += 2;
             continue;
+        }
+        /* beginning of a function */
+        if(source[i] == '(') {
+            tmp_tok = GC_MALLOC(sizeof(kari_function_token_t));
+            tmp_tok->type = KARI_TOK_FUNCTION;
+            ((kari_function_token_t*)tmp_tok)->argument = NULL;
+            kari_vec_push(tokens, tmp_tok);
+            tokens = new_kari_vec();
+            ((kari_function_token_t*)tmp_tok)->tokens = tokens;
+            kari_vec_push(tokens_stack, tokens);
+            ++i;
+            continue;
+        }
+        /* end of a function */
+        if(source[i] == ')') {
+            /* double check last token on parent tokens vec is a function token */
+            if(tokens_stack->count > 1) {
+                tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type == KARI_TOK_FUNCTION) {
+                    /* ok! */
+                    kari_vec_pop(tokens_stack);
+                    tokens = tokens_stack->entries[tokens_stack->count - 1];
+                    ++i;
+                    continue;
+                }
+            }
+            *err = "Unexpected ')'";
+            return 0;
         }
         /* '*' or '/' shorthand */
         if(source[i] == '*' || source[i] == '/') {

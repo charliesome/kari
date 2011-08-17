@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <gc.h>
 #include "dict.h"
+#include "vec.h"
 
 /*
 // CONTEXT
@@ -25,7 +26,7 @@ typedef enum kari_token_type {
     KARI_TOK_TRUE,
     KARI_TOK_FALSE,
     KARI_TOK_ASSIGN_TO_IDENTIFIER,
-    KARI_TOK_FUNCTION,
+    KARI_TOK_FUNCTION
 } kari_token_type_t;
 
 typedef struct kari_token {
