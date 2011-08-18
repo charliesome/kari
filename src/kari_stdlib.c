@@ -200,6 +200,69 @@ K_FN(if)
     return (kari_value_t*)kari_create_native_function(K_REF(_if_2), argument);
 }
 
+/* while */
+K_FN(_while_2)
+{
+    kari_value_t* tmp;
+    KASSERT(argument->type == KARI_FUNCTION || argument->type == KARI_NATIVE_FUNCTION, "Expected function");
+    while(true) {
+        tmp = kari_call(state, kari_nil(), err);
+        if(tmp == NULL) {
+            return NULL;
+        }
+        if(tmp->type != KARI_TRUE) {
+            break;
+        }
+        tmp = kari_call(argument, kari_nil(), err);
+        if(tmp == NULL) {
+            return NULL;
+        }
+    }
+    return kari_nil();
+}
+
+K_FN(while)
+{
+    KASSERT(argument->type == KARI_FUNCTION || argument->type == KARI_NATIVE_FUNCTION, "Expected function");
+    return (kari_value_t*)kari_create_native_function(K_REF(_while_2), argument);
+}
+
+/* for */
+struct for_state {
+    int from;
+    int to;
+};
+
+K_FN(_for_3)
+{
+    struct for_state* st = (struct for_state*)state;
+    kari_value_t* tmp;
+    KASSERT(argument->type == KARI_FUNCTION || argument->type == KARI_NATIVE_FUNCTION, "Expected function");
+    for(; st->from <= st->to; st->from++) {
+        tmp = kari_call(argument, (kari_value_t*)kari_create_number(st->from), err);
+        if(tmp == NULL) {
+            return NULL;
+        }
+    }
+    return kari_nil();
+}
+
+K_FN(_for_2)
+{
+    struct for_state* st = (struct for_state*)state;
+    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    st->to = (int)((kari_number_t*)argument)->number;
+    return (kari_value_t*)kari_create_native_function(K_REF(_for_3), st);
+}
+
+K_FN(for)
+{
+    struct for_state* st = GC_MALLOC(sizeof(struct for_state));
+    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    st->from = (int)((kari_number_t*)argument)->number;
+    return (kari_value_t*)kari_create_native_function(K_REF(_for_2), st);
+}
+
 /* eq */
 K_FN(_eq_2)
 {

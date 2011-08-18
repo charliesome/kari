@@ -34,6 +34,8 @@ K_FN(put);
 
 /* control flow */
 K_FN(if);
+K_FN(while);
+K_FN(for);
 
 /* comparison */
 K_FN(eq);
