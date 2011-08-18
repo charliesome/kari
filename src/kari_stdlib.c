@@ -158,3 +158,30 @@ K_FN(inspect)
 {
     return (kari_value_t*)kari_create_string(kari_inspect(argument));
 }
+
+/* if */
+K_FN(_if_3)
+{
+    KASSERT(argument->type == KARI_FUNCTION || argument->type == KARI_NATIVE_FUNCTION, "Expected function");
+    if(((kari_value_t*)state)->type == KARI_FALSE) {
+        return kari_call(argument, kari_nil(), err);
+    } else {
+        /* if the condition was true, we'll get a function to call here,
+           not a boolean in the state var */
+        return kari_call(state, kari_nil(), err);
+    }
+}
+K_FN(_if_2)
+{
+    KASSERT(argument->type == KARI_FUNCTION || argument->type == KARI_NATIVE_FUNCTION, "Expected function");
+    /* we don't call the true function right now even if the bool was true,
+       however if the bool was true, we'll replace the state passed to the
+       next function with the true function for it to call. */
+    return (kari_value_t*)kari_create_native_function(K_REF(_if_3),
+        (((kari_value_t*)state)->type == KARI_TRUE) ? argument : state);
+}
+K_FN(if)
+{
+    KASSERT(argument->type == KARI_TRUE || argument->type == KARI_FALSE, "Expected true/false value");
+    return (kari_value_t*)kari_create_native_function(K_REF(_if_2), argument);
+}

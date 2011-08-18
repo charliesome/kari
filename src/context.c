@@ -15,6 +15,10 @@ kari_context_t* kari_create_std_context()
 #define EXPOSE(fn) kari_dict_set(context->variables, #fn, kari_create_native_function(kari_stdlib_##fn, NULL))
 void kari_load_stdlib(kari_context_t* context)
 {
+    kari_dict_set(context->variables, "true", kari_true());
+    kari_dict_set(context->variables, "false", kari_false());
+    kari_dict_set(context->variables, "nil", kari_nil());
+    
     #undef K_FN
     #undef _KARI_STDLIB
     #define K_FN(fn) EXPOSE(fn)

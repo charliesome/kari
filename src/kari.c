@@ -14,14 +14,14 @@ kari_value_t* kari_nil()
 static kari_value_t k_true;
 kari_value_t* kari_true()
 {
-    k_nil.type = KARI_TRUE;
+    k_true.type = KARI_TRUE;
     return &k_true;
 }
 
 static kari_value_t k_false;
 kari_value_t* kari_false()
 {
-    k_nil.type = KARI_FALSE;
+    k_false.type = KARI_FALSE;
     return &k_false;
 }
 
@@ -38,6 +38,8 @@ char* kari_string_for_value_type_t(kari_value_type_t t)
         case KARI_NUMBER: return "NUMBER";
         case KARI_NATIVE_FUNCTION: return "NATIVE_FUNCTION";
         case KARI_FUNCTION: return "FUNCTION";
+        case KARI_TRUE: return "TRUE";
+        case KARI_FALSE: return "FALSE";
         default: return "(unknown type)";
     }
 }
@@ -81,6 +83,10 @@ char* kari_inspect(kari_value_t* value)
             return s;
         case KARI_FUNCTION:
             return "(function)";
+        case KARI_TRUE:
+            return "(true)";
+        case KARI_FALSE:
+            return "(false)";
         default:
             return "(unknown type)";
     }

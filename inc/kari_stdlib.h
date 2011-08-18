@@ -30,4 +30,7 @@ K_FN(exp);
 K_FN(inspect);
 K_FN(quit);
 
+/* control flow */
+K_FN(if);
+
 #endif
