@@ -33,4 +33,9 @@ K_FN(quit);
 /* control flow */
 K_FN(if);
 
+/* comparison */
+K_FN(eq);
+K_FN(lt);
+K_FN(gt);
+
 #endif
