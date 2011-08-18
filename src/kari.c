@@ -92,6 +92,18 @@ char* kari_inspect(kari_value_t* value)
     }
 }
 
+char* kari_str(kari_value_t* value)
+{
+    switch(value->type) {
+        case KARI_NIL:
+            return "";
+        case KARI_STRING:
+            return ((kari_string_t*)value)->str;
+        default:
+            return kari_inspect(value);
+    }
+}
+
 kari_number_t* kari_create_number(double number)
 {
     kari_number_t* n = GC_MALLOC(sizeof(kari_number_t));

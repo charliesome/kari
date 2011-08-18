@@ -29,6 +29,8 @@ K_FN(exp);
 /* system */
 K_FN(inspect);
 K_FN(quit);
+K_FN(str);
+K_FN(put);
 
 /* control flow */
 K_FN(if);

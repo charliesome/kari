@@ -160,6 +160,19 @@ K_FN(inspect)
     return (kari_value_t*)kari_create_string(kari_inspect(argument));
 }
 
+/* str */
+K_FN(str)
+{
+    return (kari_value_t*)kari_create_string(kari_str(argument));
+}
+
+/* put */
+K_FN(put)
+{
+    printf("%s\n", kari_str(argument));
+    return kari_nil();
+}
+
 /* if */
 K_FN(_if_3)
 {

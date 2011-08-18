@@ -114,6 +114,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err);
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err);
 char* kari_string_for_value_type_t(kari_value_type_t t);
 char* kari_inspect(kari_value_t* value);
+char* kari_str(kari_value_t* value);
 
 kari_number_t* kari_create_number(double number);
 kari_string_t* kari_create_string(char* str);
