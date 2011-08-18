@@ -41,5 +41,7 @@ K_FN(for);
 K_FN(eq);
 K_FN(lt);
 K_FN(gt);
+K_FN(lte);
+K_FN(gte);
 
 #endif
