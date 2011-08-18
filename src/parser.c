@@ -21,6 +21,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     char *tmp_s, *tmp_endptr;
     double d;
     bool is_after_assignment = false;
+    bool is_reference = false;
     
     kari_vec_push(tokens_stack, tokens);
     
@@ -30,6 +31,10 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             continue;
         }
         /* identifier */
+        if(!is_reference && source[i] == '@') {
+            is_reference = true;
+            ++i;
+        }
         if(is_identifier_char(source[i], false)) {
             identifier_start = i;
             while(++i < source_len && is_identifier_char(source[i], true));
@@ -40,13 +45,18 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             
             tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
             tmp_tok->type = (is_after_assignment ? KARI_TOK_ASSIGN_TO_IDENTIFIER : KARI_TOK_IDENTIFIER);
-            ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
+            ((kari_identifier_token_t*)tmp_tok)->is_reference = is_reference;
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
             ((kari_identifier_token_t*)tmp_tok)->len = i - identifier_start;
             kari_vec_push(tokens, tmp_tok);
             
+            is_reference = false;
             is_after_assignment = false;
             continue;
+        }
+        if(is_reference) {
+            *err = "Expected identifier after reference operator";
+            return 0;
         }
         if(is_after_assignment) {
             *err = "Expected identifier after assignment operator";
