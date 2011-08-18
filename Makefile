@@ -1,4 +1,4 @@
-CFLAGS=-g -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
+CFLAGS=-O3 -g -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
 
 all: deps/gc/libgc.la libkari.a repl
 
