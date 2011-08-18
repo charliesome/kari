@@ -102,6 +102,23 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         }
         /* number */
         if(source[i] == '+' || source[i] == '-' || isdigit(source[i])) {
+            if(source[i] == '-' && i + 1 < source_len && source[i+1] == '>') {
+                /* function parameter operator, only valid if second operator in function after an identifier */
+                if(tokens->count == 1 && ((kari_token_t*)tokens->entries[0])->type == KARI_TOK_IDENTIFIER) {
+                    tmp_tok = kari_vec_pop(tokens);
+                    if(tokens_stack->count > 1) {
+                        tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                        if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type == KARI_TOK_FUNCTION) {
+                            /* ok! */
+                            ((kari_function_token_t*)tmp_vec->entries[tmp_vec->count - 1])->argument = ((kari_identifier_token_t*)tmp_tok)->str;
+                            i += 2;
+                            continue;
+                        }
+                    }
+                }
+                *err = "Unexpected '->'";
+                return 0;
+            }
             if(source[i] == '+' || source[i] == '-') {
                 if(i + 1 == source_len || !(isdigit(source[i+1]) || source[i+1] == '.')) {
                     /* + and - are legal shorthand characters for add and sub */
