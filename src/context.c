@@ -7,7 +7,7 @@
 kari_context_t* kari_create_std_context()
 {
     kari_context_t* ctx = (kari_context_t*)GC_MALLOC(sizeof(kari_context_t));
-    ctx->variables = new_kari_dict(kari_dict_string_hash);
+    ctx->variables = new_kari_dict();
     kari_load_stdlib(ctx);
     return ctx;
 }
@@ -32,7 +32,7 @@ kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** e
         case KARI_FUNCTION:
             ctx = (kari_context_t*)GC_MALLOC(sizeof(kari_context_t));
             ctx->parent = ((kari_function_t*)function)->parent;
-            ctx->variables = new_kari_dict(kari_dict_string_hash);
+            ctx->variables = new_kari_dict();
             kari_dict_set(ctx->variables, ((kari_function_t*)function)->argument, argument);
             return kari_execute(ctx, ((kari_function_t*)function)->tokens, ((kari_function_t*)function)->token_count, err);
         case KARI_NATIVE_FUNCTION:

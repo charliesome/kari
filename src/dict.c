@@ -4,53 +4,30 @@
 #include "dict.h"
 #include "string.h"
 
-/*
-uint32_t kari_dict_string_hash(void* str)
-{
-    char* s = (char*)str;
-    uint32_t h = 0;
-    while(*s) {
-        h *= 17;
-        h += *s++;
-    }
-    return h;
-}
-
-static int kari_dict_entries_cmp(const void* a, const void* b) {
-    return ((const kari_dict_entry_t*)b)->hash - ((const kari_dict_entry_t*)a)->hash;
-}
-*/
-
 kari_dict_t* new_kari_dict()
 {
     kari_dict_t* d = (kari_dict_t*)GC_MALLOC(sizeof(kari_dict_t));
-    d->entries_capacity = 4;
-    d->entries = (kari_dict_entry_t*)GC_MALLOC(sizeof(kari_dict_entry_t) * d->entries_capacity);
-    d->hash_fn = hash_fn;
+    d->branch = (kari_dict_branch_t*)GC_MALLOC(sizeof(kari_dict_branch_t));
     return d;
 }
 
-bool kari_dict_set(kari_dict_t* dict, void* key, void* value)
+bool kari_dict_set(kari_dict_t* dict, char* key, void* value)
 {
-    if(dict->entries_count == dict->entries_capacity) {
-        dict->entries_capacity *= 2;
-        dict->entries = (kari_dict_entry_t*)GC_REALLOC(dict->entries, sizeof(kari_dict_entry_t) * dict->entries_capacity);
+    kari_dict_branch_t* branch = dict->branch;
+    while(*key) {
+        if(branch->branches[(int)*key] == NULL) {
+            branch->branches[(int)*key] = (kari_dict_branch_t*)GC_MALLOC(sizeof(kari_dict_branch_t));
+        }
+        branch = branch->branches[(int)*key];
+        key++;
     }
-    if(kari_dict_exists(dict, key)) {
-        kari_dict_find(dict, key)->value = value;
-        return true;
-    }
-    dict->entries[dict->entries_count].hash = dict->hash_fn(key);
-    dict->entries[dict->entries_count].key = key;
-    dict->entries[dict->entries_count].value = value;
-    dict->entries_count++;
-    qsort(dict->entries, dict->entries_count, sizeof(kari_dict_entry_t), kari_dict_entries_cmp);
+    branch->value = value;
     return true;
 }
 
-bool kari_dict_exists(kari_dict_t* dict, void* key)
+bool kari_dict_exists(kari_dict_t* dict, char* key)
 {
-    kari_dict_entry_t* e = kari_dict_find(dict, key);
+    kari_dict_branch_t* e = kari_dict_find(dict, key);
     if(e == NULL) {
         return false;
     } else {
@@ -58,29 +35,28 @@ bool kari_dict_exists(kari_dict_t* dict, void* key)
     }
 }
 
-void kari_dict_remove(kari_dict_t* dict, void* key)
+void kari_dict_remove(kari_dict_t* dict, char* key)
 {
-    kari_dict_entry_t* e = kari_dict_find(dict, key);
-    if(e == NULL) {
-        return;
+    kari_dict_branch_t* b = kari_dict_find(dict, key);
+    b->value = NULL;
+}
+
+kari_dict_branch_t* kari_dict_find(kari_dict_t* dict, char* key)
+{
+    kari_dict_branch_t* branch = dict->branch;
+    while(*key) {
+        if(branch->branches[(int)*key] == NULL) {
+            return NULL;
+        }
+        branch = branch->branches[(int)*key];
+        key++;
     }
-    memmove(e, e + 1, dict->entries_count - ((size_t)e - (size_t)dict->entries) - 1);
-    dict->entries_count--;
-    dict->entries[dict->entries_count].hash = 0;
-    dict->entries[dict->entries_count].key = NULL;
-    dict->entries[dict->entries_count].value = NULL;
+    return branch;
 }
 
-kari_dict_entry_t* kari_dict_find(kari_dict_t* dict, void* key)
+void* kari_dict_find_value(kari_dict_t* dict, char* key)
 {
-    kari_dict_entry_t search;
-    search.hash = dict->hash_fn(key);
-    return (kari_dict_entry_t*)bsearch(&search, dict->entries, dict->entries_count, sizeof(kari_dict_entry_t), kari_dict_entries_cmp);
-}
-
-void* kari_dict_find_value(kari_dict_t* dict, void* key)
-{
-    kari_dict_entry_t* e = kari_dict_find(dict, key);
+    kari_dict_branch_t* e = kari_dict_find(dict, key);
     if(e == NULL) {
         return NULL;
     } else {
