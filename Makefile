@@ -1,4 +1,4 @@
-CFLAGS=-O3 -g -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
+CFLAGS=-O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
 
 all: deps/gc/libgc.la libkari.a repl
 
@@ -9,7 +9,7 @@ clean:
 	rm ikari
 
 repl: libkari.a repl/ikari.o
-	$(CC) -o ikari libkari.a repl/*.o
+	$(CC) $(CFLAGS) -o ikari libkari.a repl/*.o
 
 repl/%.o: repl/%.c inc/*.h
 
