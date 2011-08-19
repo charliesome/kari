@@ -4,25 +4,22 @@
 #include "kari.h"
 #include "kari_stdlib.h"
 
-static kari_value_t k_nil;
+static kari_value_type_t k_nil = KARI_NIL;
 kari_value_t* kari_nil()
 {
-    k_nil.type = KARI_NIL;
-    return &k_nil;
+    return (kari_value_t*)&k_nil;
 }
 
-static kari_value_t k_true;
+static kari_value_type_t k_true = KARI_TRUE;
 kari_value_t* kari_true()
 {
-    k_true.type = KARI_TRUE;
-    return &k_true;
+    return (kari_value_t*)&k_true;
 }
 
-static kari_value_t k_false;
+static kari_value_type_t k_false = KARI_FALSE;
 kari_value_t* kari_false()
 {
-    k_false.type = KARI_FALSE;
-    return &k_false;
+    return (kari_value_t*)&k_false;
 }
 
 kari_value_t* kari_boolean(bool boolean)
