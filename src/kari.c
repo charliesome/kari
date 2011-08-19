@@ -30,6 +30,19 @@ kari_value_t* kari_boolean(bool boolean)
     return (boolean ? kari_true : kari_false)();
 }
 
+char* kari_string_for_token_type_t(kari_token_type_t t)
+{
+    switch(t) {
+        case KARI_TOK_NIL: return "nil";
+        case KARI_TOK_STRING: return "string";
+        case KARI_TOK_NUMBER: return "number";
+        case KARI_TOK_FUNCTION: return "function";
+        case KARI_TOK_ASSIGN_TO_IDENTIFIER: return "assign to identifier";
+        case KARI_TOK_ARRAY: return "array";
+        default: return "(unknown type)";
+    }
+}
+
 char* kari_string_for_value_type_t(kari_value_type_t t)
 {
     switch(t) {
@@ -40,14 +53,15 @@ char* kari_string_for_value_type_t(kari_value_type_t t)
         case KARI_FUNCTION: return "FUNCTION";
         case KARI_TRUE: return "TRUE";
         case KARI_FALSE: return "FALSE";
+        case KARI_ARRAY: return "ARRAY";
         default: return "(unknown type)";
     }
 }
 
 char* kari_inspect(kari_value_t* value)
 {
-    size_t s_len, s_cap, i;
-    char* s;
+    size_t s_len, s_cap, i, tmp_size;
+    char *s, *tmp_s;
     
     switch(value->type) {
         case KARI_NIL:
@@ -55,12 +69,12 @@ char* kari_inspect(kari_value_t* value)
         case KARI_STRING:
             s_len = 0;
             s_cap = 16;
-            s = GC_MALLOC(s_cap);
+            s = (char*)GC_MALLOC(s_cap);
             s[s_len++] = '"';
             for(i = 0; i < ((kari_string_t*)value)->len; i++) {
                 if(s_len + 2 >= s_cap) {
                     s_cap *= 2;
-                    s = GC_REALLOC(s, s_cap);
+                    s = (char*)GC_REALLOC(s, s_cap);
                 }
                 if(((kari_string_t*)value)->str[i] == '"' || ((kari_string_t*)value)->str[i] == '\\') {
                     s[s_len++] = '\\';
@@ -68,17 +82,17 @@ char* kari_inspect(kari_value_t* value)
                 s[s_len++] = ((kari_string_t*)value)->str[i];
             }
             if(s_len + 2 >= s_cap) {
-                s = GC_REALLOC(s, s_cap + 2);
+                s = (char*)GC_REALLOC(s, s_cap + 2);
             }
             s[s_len++] = '"';
             s[s_len++] = 0;
             return s;
         case KARI_NUMBER:
-            s = GC_MALLOC(32);
+            s = (char*)GC_MALLOC(32);
             sprintf(s, "%f", ((kari_number_t*)value)->number);
             return s;
         case KARI_NATIVE_FUNCTION:
-            s = GC_MALLOC(64);
+            s = (char*)GC_MALLOC(64);
             sprintf(s, "(native-function:%p)", (void*)(size_t)((kari_native_function_t*)value)->call);
             return s;
         case KARI_FUNCTION:
@@ -87,6 +101,36 @@ char* kari_inspect(kari_value_t* value)
             return "(true)";
         case KARI_FALSE:
             return "(false)";
+        case KARI_ARRAY:
+            s_len = 0;
+            s_cap = 16;
+            s = (char*)GC_MALLOC(s_cap);
+            s[s_len++] = '[';
+            for(i = 0; i < ((kari_array_t*)value)->items->count; i++) {
+                if(i != 0) {
+                    if(s_len + 2 > s_cap) {
+                        s_cap *= 2;
+                        s = (char*)GC_REALLOC(s, s_cap);
+                    }
+                    s[s_len++] = ',';
+                    s[s_len++] = ' ';
+                }
+                tmp_s = kari_inspect((kari_value_t*)((kari_array_t*)value)->items->entries[i]);
+                tmp_size = strlen(tmp_s);
+                while(s_len + tmp_size > s_cap) {
+                    s_cap *= 2;
+                    s = (char*)GC_REALLOC(s, s_cap);
+                }
+                memcpy(tmp_s + s_len, tmp_s, tmp_size);
+                s_len += tmp_size;
+            }
+            if(s_len + 2 > s_cap) {
+                s_cap *= 2;
+                s = (char*)GC_REALLOC(s, s_cap);
+            }
+            s[s_len++] = ']';
+            s[s_len++] = 0;
+            return s;
         default:
             return "(unknown type)";
     }
@@ -106,7 +150,7 @@ char* kari_str(kari_value_t* value)
 
 kari_number_t* kari_create_number(double number)
 {
-    kari_number_t* n = GC_MALLOC(sizeof(kari_number_t));
+    kari_number_t* n = (kari_number_t*)GC_MALLOC(sizeof(kari_number_t));
     n->base.type = KARI_NUMBER;
     n->number = number;
     return n;
@@ -114,7 +158,7 @@ kari_number_t* kari_create_number(double number)
 
 kari_string_t* kari_create_string(char* str)
 {
-    kari_string_t* s = GC_MALLOC(sizeof(kari_string_t));
+    kari_string_t* s = (kari_string_t*)GC_MALLOC(sizeof(kari_string_t));
     s->base.type = KARI_STRING;
     s->str = str;
     s->len = strlen(str);
@@ -123,7 +167,7 @@ kari_string_t* kari_create_string(char* str)
 
 kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state)
 {
-    kari_native_function_t* f = GC_MALLOC(sizeof(kari_native_function_t));
+    kari_native_function_t* f = (kari_native_function_t*)GC_MALLOC(sizeof(kari_native_function_t));
     f->base.type = KARI_NATIVE_FUNCTION;
     f->state = state;
     f->call = fn;

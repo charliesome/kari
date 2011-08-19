@@ -23,10 +23,9 @@ typedef enum kari_token_type {
     KARI_TOK_NUMBER,
     KARI_TOK_IDENTIFIER,
     KARI_TOK_STRING,
-    KARI_TOK_TRUE,
-    KARI_TOK_FALSE,
     KARI_TOK_ASSIGN_TO_IDENTIFIER,
-    KARI_TOK_FUNCTION
+    KARI_TOK_FUNCTION,
+    KARI_TOK_ARRAY
 } kari_token_type_t;
 
 typedef struct kari_token {
@@ -57,6 +56,11 @@ typedef struct kari_function_token {
     kari_vec_t* tokens;
 } kari_function_token_t;
 
+typedef struct kari_array_token {
+    kari_token_t base;
+    kari_vec_t* items;
+} kari_array_token_t;
+
 /*
 // RUNTIME VALUES
 */
@@ -67,7 +71,8 @@ typedef enum kari_value_type {
     KARI_NATIVE_FUNCTION,
     KARI_FUNCTION,
     KARI_TRUE,
-    KARI_FALSE
+    KARI_FALSE,
+    KARI_ARRAY
 } kari_value_type_t;
 
 typedef struct kari_value {
@@ -84,6 +89,11 @@ typedef struct kari_string {
     char* str;
     size_t len;
 } kari_string_t;
+
+typedef struct kari_array {
+    kari_value_t base;
+    kari_vec_t* items;
+} kari_array_t;
 
 typedef kari_value_t*(*kari_nfn_t)(void*,kari_value_t*,char**);
 typedef struct kari_native_function {
@@ -113,6 +123,7 @@ kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** e
 size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err);
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err);
 char* kari_string_for_value_type_t(kari_value_type_t t);
+char* kari_string_for_token_type_t(kari_token_type_t t);
 char* kari_inspect(kari_value_t* value);
 char* kari_str(kari_value_t* value);
 

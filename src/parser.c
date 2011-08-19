@@ -18,6 +18,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     size_t i = 0, identifier_start, cap, len;
     kari_token_t* tmp_tok;
     kari_vec_t* tmp_vec;
+    kari_array_token_t* tmp_ary;
     char *tmp_s, *tmp_endptr;
     double d;
     bool is_after_assignment = false;
@@ -39,11 +40,11 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             identifier_start = i;
             while(++i < source_len && is_identifier_char(source[i], true));
             
-            tmp_s = GC_MALLOC(i - identifier_start + 1);
+            tmp_s = (char*)GC_MALLOC(i - identifier_start + 1);
             memcpy(tmp_s, source + identifier_start, i - identifier_start);
             tmp_s[i - identifier_start] = 0;
             
-            tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_identifier_token_t));
             tmp_tok->type = (is_after_assignment ? KARI_TOK_ASSIGN_TO_IDENTIFIER : KARI_TOK_IDENTIFIER);
             ((kari_identifier_token_t*)tmp_tok)->is_reference = is_reference;
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
@@ -73,7 +74,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         }
         /* beginning of a function */
         if(source[i] == '(') {
-            tmp_tok = GC_MALLOC(sizeof(kari_function_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_function_token_t));
             tmp_tok->type = KARI_TOK_FUNCTION;
             ((kari_function_token_t*)tmp_tok)->argument = NULL;
             kari_vec_push(tokens, tmp_tok);
@@ -91,7 +92,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                 if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type == KARI_TOK_FUNCTION) {
                     /* ok! */
                     kari_vec_pop(tokens_stack);
-                    tokens = tokens_stack->entries[tokens_stack->count - 1];
+                    tokens = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 1];
                     ++i;
                     continue;
                 }
@@ -99,9 +100,65 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             *err = "Unexpected ')'";
             return 0;
         }
+        if(source[i] == '[') {
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_array_token_t));
+            tmp_tok->type = KARI_TOK_ARRAY;
+            kari_vec_push(tokens, tmp_tok);
+            
+            ((kari_array_token_t*)tmp_tok)->items = new_kari_vec();
+            tokens = new_kari_vec();
+            kari_vec_push(((kari_array_token_t*)tmp_tok)->items, tokens);
+            kari_vec_push(tokens_stack, tokens);
+            ++i;
+            continue;
+        }
+        if(source[i] == ']') {
+            if(tokens_stack->count > 1) {
+                tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type == KARI_TOK_ARRAY) {
+                    /* ok! */
+                    tmp_ary = (kari_array_token_t*)tmp_vec->entries[tmp_vec->count - 1];
+                    if(((kari_vec_t*)tmp_ary->items->entries[tmp_ary->items->count - 1])->count == 0) {
+                        /* allow for trailing comma and don't add an extra element */
+                        kari_vec_pop(tmp_ary->items);
+                    }
+                    kari_vec_pop(tokens_stack);
+                    tokens = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 1];
+                    ++i;
+                    continue;
+                }
+            }
+            *err = "Unexpected ']'";
+            return 0;
+        }
+        if(source[i] == ',') {
+            if(tokens_stack->count > 1) {
+                tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                if(tmp_vec->count > 0) {
+                    switch(((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type) {
+                        case KARI_TOK_ARRAY:
+                            
+                            tmp_ary = (kari_array_token_t*)tmp_vec->entries[tmp_vec->count - 1];
+                            kari_vec_pop(tokens_stack);
+                            tokens = new_kari_vec();
+                            kari_vec_push(tokens_stack, tokens);
+                            kari_vec_push(tmp_ary->items, tokens);
+                            
+                            ++i;
+                            continue;
+                            
+                        default:
+                            *err = "Unexpected ','";
+                            return 0;
+                    }
+                }
+            }
+            *err = "Unexpected ','";
+            return 0;
+        }
         /* '*' or '/' shorthand */
         if(source[i] == '*' || source[i] == '/') {
-            tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_identifier_token_t));
             tmp_tok->type = KARI_TOK_IDENTIFIER;
             ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
             ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '*' ? "mul" : "div");
@@ -115,7 +172,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             if(source[i] == '-' && i + 1 < source_len && source[i+1] == '>') {
                 /* function parameter operator, only valid if second operator in function after an identifier */
                 if(tokens->count == 1 && ((kari_token_t*)tokens->entries[0])->type == KARI_TOK_IDENTIFIER) {
-                    tmp_tok = kari_vec_pop(tokens);
+                    tmp_tok = (kari_token_t*)kari_vec_pop(tokens);
                     if(tokens_stack->count > 1) {
                         tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
                         if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count - 1])->type == KARI_TOK_FUNCTION) {
@@ -132,7 +189,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             if(source[i] == '+' || source[i] == '-') {
                 if(i + 1 == source_len || !(isdigit(source[i+1]) || source[i+1] == '.')) {
                     /* + and - are legal shorthand characters for add and sub */
-                    tmp_tok = GC_MALLOC(sizeof(kari_identifier_token_t));
+                    tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_identifier_token_t));
                     tmp_tok->type = KARI_TOK_IDENTIFIER;
                     ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
                     ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '+' ? "add" : "sub");
@@ -146,7 +203,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             d = strtod(source + i, &tmp_endptr);
             i = tmp_endptr - source;
             
-            tmp_tok = GC_MALLOC(sizeof(kari_number_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_number_token_t));
             tmp_tok->type = KARI_TOK_NUMBER;
             ((kari_number_token_t*)tmp_tok)->number = d;
             kari_vec_push(tokens, tmp_tok);
@@ -156,7 +213,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         if(source[i] == '"') {
             len = 0;
             cap = 4;
-            tmp_s = GC_MALLOC(cap);
+            tmp_s = (char*)GC_MALLOC(cap);
             while(true) {
                 ++i;
                 if(i == source_len) {
@@ -169,7 +226,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                 }
                 if(len == cap) {
                     cap *= 2;
-                    tmp_s = GC_REALLOC(tmp_s, cap);
+                    tmp_s = (char*)GC_REALLOC(tmp_s, cap);
                 }
                 if(source[i] == '\\') {
                     ++i;
@@ -193,7 +250,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                 }
             }
             
-            tmp_tok = GC_MALLOC(sizeof(kari_string_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_string_token_t));
             tmp_tok->type = KARI_TOK_STRING;
             ((kari_string_token_t*)tmp_tok)->str = tmp_s;
             ((kari_string_token_t*)tmp_tok)->len = len;
@@ -203,7 +260,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         }
         /* nil char */
         if(source[i] == '!') {
-            tmp_tok = GC_MALLOC(sizeof(kari_token_t));
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_token_t));
             tmp_tok->type = KARI_TOK_NIL;
             kari_vec_push(tokens, tmp_tok);
             i++;
@@ -211,12 +268,20 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         }
         
     /*illegal_char:*/
-        *err = GC_MALLOC(64);
+        *err = (char*)GC_MALLOC(64);
         sprintf(*err, "Illegal character '%c'", source[i]);
         return 0;
     }    
     if(is_after_assignment) {
         *err = "Expected identifier after => operator";
+        return 0;
+    }
+    if(tokens_stack->count > 1) {
+        kari_vec_pop(tokens_stack);
+        tokens = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 1];
+        *err = (char*)GC_MALLOC(64);
+        tmp_tok = (kari_token_t*)tokens->entries[tokens->count - 1];
+        sprintf(*err, "Unterminated %s (%d)", kari_string_for_token_type_t(tmp_tok->type), tmp_tok->type);
         return 0;
     }
     *err = NULL;

@@ -4,6 +4,7 @@
 #include "dict.h"
 #include "string.h"
 
+/*
 uint32_t kari_dict_string_hash(void* str)
 {
     char* s = (char*)str;
@@ -18,8 +19,9 @@ uint32_t kari_dict_string_hash(void* str)
 static int kari_dict_entries_cmp(const void* a, const void* b) {
     return ((const kari_dict_entry_t*)b)->hash - ((const kari_dict_entry_t*)a)->hash;
 }
+*/
 
-kari_dict_t* new_kari_dict(uint32_t(*hash_fn)(void*))
+kari_dict_t* new_kari_dict()
 {
     kari_dict_t* d = (kari_dict_t*)GC_MALLOC(sizeof(kari_dict_t));
     d->entries_capacity = 4;
@@ -32,7 +34,7 @@ bool kari_dict_set(kari_dict_t* dict, void* key, void* value)
 {
     if(dict->entries_count == dict->entries_capacity) {
         dict->entries_capacity *= 2;
-        dict->entries = GC_REALLOC(dict->entries, sizeof(kari_dict_entry_t) * dict->entries_capacity);
+        dict->entries = (kari_dict_entry_t*)GC_REALLOC(dict->entries, sizeof(kari_dict_entry_t) * dict->entries_capacity);
     }
     if(kari_dict_exists(dict, key)) {
         kari_dict_find(dict, key)->value = value;

@@ -8,18 +8,18 @@ char* readstr(bool end_on_newline)
 {
     int c;
     size_t len = 0, capacity = 16;
-    char* s = GC_MALLOC(capacity);
+    char* s = (char*)GC_MALLOC(capacity);
     while(true) {
         c = getchar();
         if(c != EOF && !(end_on_newline && c == '\n')) {
             s[len++] = c;
             if(len == capacity) {
                 capacity *= 2;
-                s = GC_REALLOC(s, capacity);
+                s = (char*)GC_REALLOC(s, capacity);
             }
         } else {
             s[len++] = 0;
-            return GC_REALLOC(s, len);
+            return (char*)GC_REALLOC(s, len);
         }
     }
 }
