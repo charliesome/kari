@@ -1,5 +1,6 @@
 #include "kari.h"
 #include "kari_stdlib.h"
+#include <gc.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -107,4 +108,90 @@ K_FN(split)
 {    
     KASSERT(argument->type == KARI_STRING, "Expected string");
     return (kari_value_t*)kari_create_native_function(K_REF(_split_2), argument);
+}
+
+/* concat */
+K_FN(_concat_2)
+{
+    size_t a_sz = strlen((char*)state);
+    size_t b_sz = strlen(((kari_string_t*)argument)->str);
+    char* buff = (char*)GC_MALLOC(a_sz + b_sz + 1);
+    memcpy(buff, (char*)state, a_sz);
+    memcpy(buff + a_sz, ((kari_string_t*)argument)->str, b_sz);
+    return (kari_value_t*)kari_create_string(buff);
+}
+
+K_FN(concat)
+{
+    return (kari_value_t*)kari_create_native_function(K_REF(_concat_2), kari_str(argument));
+}
+
+/* index_of */
+K_FN(_index_of_2)
+{
+    char *idx, *ptr;
+    size_t cp_offset = 0;
+    KASSERT(argument->type == KARI_STRING, "Expected string");
+    idx = strstr(((kari_string_t*)state)->str, ((kari_string_t*)argument)->str);
+    if(idx) {
+        ptr = ((kari_string_t*)state)->str;
+        while(ptr < idx) {
+            if((*ptr & 0xc0) != 0x80) {
+                cp_offset++;
+            }
+            ptr++;
+        }
+        return (kari_value_t*)kari_create_number(cp_offset);
+    }
+    return kari_nil();
+}
+
+K_FN(index_of)
+{
+    KASSERT(argument->type == KARI_STRING, "Expected string");
+    return (kari_value_t*)kari_create_native_function(K_REF(_index_of_2), argument);
+}
+
+/* interpolate */
+K_FN(_interpolate_2)
+{
+    size_t len = 0, capacity = 4, ary_offset;
+    char* ptr = ((kari_string_t*)state)->str;
+    char* buff = (char*)GC_MALLOC(capacity);
+    char* tmp;
+    kari_array_t* ary = (kari_array_t*)argument;
+    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    
+    while(*ptr) {
+        if(*ptr == '%' && ptr[1] != 0 && ptr[1] >= '0' && ptr[1] <= '9') {
+            ary_offset = 0;
+            do {
+                ary_offset *= 10;
+                ary_offset += *(++ptr) - '0';
+            } while(ptr[1] >= '0' && ptr[1] <= '9');
+            tmp = kari_str(ary_offset < ary->items->count ? (kari_value_t*)ary->items->entries[ary_offset] : kari_nil());
+            while(*tmp) {
+                if(len + 2 >= capacity) {
+                    buff = (char*)GC_REALLOC(buff, capacity * 2);
+                    capacity *= 2;
+                }
+                buff[len++] = *tmp++;
+            }
+        } else {
+            if(len + 2 >= capacity) {
+                buff = (char*)GC_REALLOC(buff, capacity * 2);
+                capacity *= 2;
+            }
+            buff[len++] = *ptr;
+        }
+        ptr++;
+    }
+    buff[len] = 0;
+    return (kari_value_t*)kari_create_string(buff);
+}
+
+K_FN(interpolate)
+{
+    KASSERT(argument->type == KARI_STRING, "Expected string");
+    return (kari_value_t*)kari_create_native_function(K_REF(_interpolate_2), argument);
 }

@@ -51,5 +51,8 @@ K_FN(len);
 K_FN(chr);
 K_FN(ord);
 K_FN(split);
+K_FN(concat);
+K_FN(index_of);
+K_FN(interpolate);
 
 #endif
