@@ -1,4 +1,4 @@
-CFLAGS=-O3
+CFLAGS=-O3 -lm
 
 %: %.c %.kari ../ikari
 	$(CC) $(CFLAGS) -o $@ $<

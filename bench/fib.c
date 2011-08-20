@@ -17,6 +17,6 @@ long long fib(int n)
 
 int main()
 {
-    fib(50000);    
+    fib(100000);    
     return 0;
 }

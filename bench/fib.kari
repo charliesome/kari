@@ -1,8 +1,12 @@
 (n ->
-  (a -> (b -> (i ->
-    if gt i 0 (fib_iter + a b a - i 1) (a)
-  ))) => fib_iter
-  fib_iter 1 0 n
+	1 => a
+	0 => b
+	for 1 n (
+		b => c
+		a => b
+		+ a c => a
+	)
+	a
 ) => fib
 
-fib 50000
+fib 100000
