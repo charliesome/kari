@@ -50,5 +50,6 @@ K_FN(gte);
 K_FN(len);
 K_FN(chr);
 K_FN(ord);
+K_FN(split);
 
 #endif

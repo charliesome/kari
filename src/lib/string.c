@@ -73,3 +73,38 @@ K_FN(ord)
         return (kari_value_t*)kari_create_number(str->str[0]);
     }
 }
+
+/* split */
+K_FN(_split_2)
+{
+    kari_array_t* ary;
+    kari_string_t* str = (kari_string_t*)state;
+    kari_string_t* delim = (kari_string_t*)argument;
+    size_t delim_bytes;
+    char *strptr, *tmp, *delimptr, *endptr;
+    KASSERT(argument->type == KARI_STRING, "Expected string");
+    
+    delim_bytes = strlen(delim->str);
+    
+    ary = (kari_array_t*)GC_MALLOC(sizeof(kari_array_t));
+    ary->base.type = KARI_ARRAY;
+    ary->items = new_kari_vec();
+    
+    strptr = str->str;
+    endptr = strptr + strlen(strptr);
+    do {
+        delimptr = strstr(strptr, delim->str);
+        tmp = (char*)GC_MALLOC((delimptr ? delimptr : endptr) - strptr + 1);
+        memcpy(tmp, strptr, (delimptr ? delimptr : endptr) - strptr);
+        kari_vec_push(ary->items, kari_create_string(tmp));
+        strptr = (delimptr ? delimptr : endptr) + delim_bytes;
+    } while(delimptr != NULL);
+    
+    return (kari_value_t*)ary;
+}
+
+K_FN(split)
+{    
+    KASSERT(argument->type == KARI_STRING, "Expected string");
+    return (kari_value_t*)kari_create_native_function(K_REF(_split_2), argument);
+}
