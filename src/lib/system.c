@@ -33,3 +33,18 @@ K_FN(put)
     printf("%s\n", kari_str(argument));
     return kari_nil();
 }
+
+/* try */
+K_FN(try)
+{    
+    char* e = NULL;
+    kari_value_t* val = NULL;
+    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    
+    val = kari_call(argument, kari_nil(), &e);
+    if(e) {
+        return (kari_value_t*)kari_create_string(e);
+    } else {
+        return val;
+    }
+}

@@ -32,6 +32,7 @@ K_FN(inspect);
 K_FN(quit);
 K_FN(str);
 K_FN(put);
+K_FN(try);
 
 /* control flow */
 K_FN(if);
