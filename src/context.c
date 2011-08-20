@@ -25,6 +25,18 @@ void kari_load_stdlib(kari_context_t* context)
     #include "kari_stdlib.h"
 }
 
+kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err)
+{
+    kari_token_t** tokens;
+    size_t tokens_count;
+    *err = NULL;
+    tokens_count = kari_parse(source, &tokens, err);
+    if(*err) {
+        return NULL;
+    }
+    return kari_execute(ctx, tokens, tokens_count, err);
+}
+
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err)
 {
     kari_context_t* ctx;

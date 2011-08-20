@@ -65,15 +65,17 @@ typedef struct kari_array_token {
 // RUNTIME VALUES
 */
 typedef enum kari_value_type {
-    KARI_NIL,
-    KARI_NUMBER,
-    KARI_STRING,
-    KARI_NATIVE_FUNCTION,
-    KARI_FUNCTION,
-    KARI_TRUE,
-    KARI_FALSE,
-    KARI_ARRAY
+    KARI_NIL = 0x00,
+    KARI_NUMBER = 0x01,
+    KARI_STRING = 0x02,
+    KARI_NATIVE_FUNCTION = 0x80,
+    KARI_FUNCTION = 0x81,
+    KARI_TRUE = 0x40,
+    KARI_FALSE = 0x41,
+    KARI_ARRAY = 0x05
 } kari_value_type_t;
+#define K_IS_CALLABLE(t) (t & 0x80)
+#define K_IS_BOOLEAN(t) (t & 0x40)
 
 typedef struct kari_value {
     kari_value_type_t type;
@@ -122,6 +124,7 @@ void kari_load_stdlib(kari_context_t* context);
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err);
 size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err);
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err);
+kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err);
 char* kari_string_for_value_type_t(kari_value_type_t t);
 char* kari_string_for_token_type_t(kari_token_type_t t);
 char* kari_inspect(kari_value_t* value);
