@@ -6,6 +6,7 @@
 #ifndef K_FN
     #define K_REF(name) kari_stdlib_##name
     #define K_FN(name) kari_value_t* K_REF(name)(void* state, kari_value_t* argument, char** err)
+    #define KASSERT(cond, msg) if(!(cond)) { *err = (msg); return NULL; }
 #endif
 
 /* math */
@@ -43,5 +44,10 @@ K_FN(lt);
 K_FN(gt);
 K_FN(lte);
 K_FN(gte);
+
+/* string */
+K_FN(len);
+K_FN(chr);
+K_FN(ord);
 
 #endif

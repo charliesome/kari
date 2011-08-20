@@ -87,6 +87,12 @@ char* kari_inspect(kari_value_t* value)
         case KARI_NUMBER:
             s = (char*)GC_MALLOC(32);
             sprintf(s, "%f", ((kari_number_t*)value)->number);
+            for(i = strlen(s) - 1; s[i] == '0' || s[i] == '.'; i--) {
+                s[i] = 0;
+            }
+            if(s[0] == 0) {
+                s[0] = '0';
+            }
             return s;
         case KARI_NATIVE_FUNCTION:
             s = (char*)GC_MALLOC(64);
@@ -118,7 +124,7 @@ char* kari_inspect(kari_value_t* value)
                     s_cap *= 2;
                     s = (char*)GC_REALLOC(s, s_cap);
                 }
-                memcpy(tmp_s + s_len, tmp_s, tmp_size);
+                memcpy(s + s_len, tmp_s, tmp_size);
                 s_len += tmp_size;
             }
             if(s_len + 2 > s_cap) {
@@ -158,7 +164,7 @@ kari_string_t* kari_create_string(char* str)
     kari_string_t* s = (kari_string_t*)GC_MALLOC(sizeof(kari_string_t));
     s->base.type = KARI_STRING;
     s->str = str;
-    s->len = strlen(str);
+    s->len = kari_utf8_strlen(str);
     return s;
 }
 
@@ -169,4 +175,16 @@ kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state)
     f->state = state;
     f->call = fn;
     return f;
+}
+
+size_t kari_utf8_strlen(char* s)
+{
+    size_t len = 0;
+    while(*s) {
+        if((*s & 0xc0) != 0x80) {
+            len++;
+        }
+        s++;
+    }
+    return len;
 }

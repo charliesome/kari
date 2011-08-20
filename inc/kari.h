@@ -134,4 +134,6 @@ kari_number_t* kari_create_number(double number);
 kari_string_t* kari_create_string(char* str);
 kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state);
 
+size_t kari_utf8_strlen(char* s);
+
 #endif

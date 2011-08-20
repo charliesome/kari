@@ -10,6 +10,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
     kari_value_t *value = NULL, *tmp_val;
     kari_context_t* lookup_ctx;
     kari_function_t* tmp_fun;
+    kari_array_token_t* tmp_ary;
     size_t i = 0, tmp_i = 0;
     while(i < token_count || function_stack->count > 0) {
         if(i < token_count) {
@@ -86,14 +87,13 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     
                     
                 case KARI_TOK_ARRAY:    
-                    printf("... constructing array\n");
                     value = (kari_value_t*)GC_MALLOC(sizeof(kari_array_t));
                     value->type = KARI_ARRAY;
                     ((kari_array_t*)value)->items = new_kari_vec();
-                    for(tmp_i = 0; tmp_i < ((kari_array_token_t*)tokens[i])->items->count; tmp_i++) {
-                        printf("... appending item with %ld tokens\n", ((kari_array_token_t*)tokens[i])->items->count);
-                        tmp_val = kari_execute(ctx, (kari_token_t**)((kari_array_token_t*)tokens[i])->items->entries,
-                            ((kari_array_token_t*)tokens[i])->items->count, err);
+                    tmp_ary = (kari_array_token_t*)tokens[i];
+                    for(tmp_i = 0; tmp_i < tmp_ary->items->count; tmp_i++) {
+                        tmp_val = kari_execute(ctx, (kari_token_t**)((kari_vec_t*)tmp_ary->items->entries[tmp_i])->entries,
+                            ((kari_vec_t*)tmp_ary->items->entries[tmp_i])->count, err);
                         if(tmp_val == NULL) {
                             return NULL;
                         }

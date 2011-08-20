@@ -253,7 +253,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_string_token_t));
             tmp_tok->type = KARI_TOK_STRING;
             ((kari_string_token_t*)tmp_tok)->str = tmp_s;
-            ((kari_string_token_t*)tmp_tok)->len = len;
+            ((kari_string_token_t*)tmp_tok)->len = kari_utf8_strlen(tmp_s);
             kari_vec_push(tokens, tmp_tok);
             
             continue;
