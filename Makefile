@@ -13,7 +13,7 @@ repl: libkari.a repl/ikari.o
 
 repl/%.o: repl/%.c inc/*.h
 
-libkari.a: src/context.o src/dict.o src/kari.o src/kari_stdlib.o src/vec.o src/parser.o src/vm.o
+libkari.a: src/context.o src/dict.o src/kari.o src/kari_stdlib.o src/vec.o src/parser.o src/execute.o
 	ar r libkari.a src/*.o deps/gc/*.o 2> /dev/null
 
 src/%.o: src/%.c inc/%.h
