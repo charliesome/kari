@@ -21,7 +21,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     while(lookup_ctx != NULL) {
                         if(kari_dict_exists(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str)) {
                             value = (kari_value_t*)kari_dict_find_value(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str);
-                            if(value->type == KARI_NATIVE_FUNCTION || value->type == KARI_FUNCTION) {
+                            if(K_IS_CALLABLE(value->type)) {
                                 kari_vec_push(function_stack, value);
                                 value = NULL;
                             }
@@ -35,7 +35,10 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     found_value: break;
                     
                     
-                case KARI_TOK_ASSIGN_TO_IDENTIFIER:
+                case KARI_TOK_ASSIGN_TO_IDENTIFIER:    
+                    if(value == NULL) {
+                        value = (kari_value_t*)kari_vec_pop(function_stack);
+                    }
                     lookup_ctx = ctx;
                     while(lookup_ctx != NULL) {
                         if(kari_dict_exists(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str)) {
@@ -45,9 +48,6 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     }
                     if(lookup_ctx == NULL) {
                         lookup_ctx = ctx;
-                    }
-                    if(value == NULL) {
-                        value = (kari_value_t*)kari_vec_pop(function_stack);
                     }
                     kari_dict_set(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str, value);
                     break;
@@ -116,7 +116,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
             if(*err) {
                 return NULL;
             }
-            if(value->type == KARI_NATIVE_FUNCTION || value->type == KARI_FUNCTION) {
+            if(K_IS_CALLABLE(value->type)) {
                 kari_vec_push(function_stack, value);
                 value = NULL;
             }
