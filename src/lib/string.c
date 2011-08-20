@@ -34,9 +34,14 @@ K_FN(chr)
         str[1] = (char)(((codepoint >> 0) & 0x3f) | 0x80);
         str[0] = (char)(((codepoint >> 6) & 0x1f) | 0xc0);
     } else if(codepoint < 0xffff) {
-        
+        str[2] = (char)(((codepoint >> 0) & 0x3f) | 0x80);
+        str[1] = (char)(((codepoint >> 6) & 0x3f) | 0x80);
+        str[0] = (char)(((codepoint >> 12) & 0x0f) | 0xe0);
     } else if(codepoint < 0x10ffff) {
-        
+        str[3] = (char)(((codepoint >> 0) & 0x3f) | 0x80);
+        str[2] = (char)(((codepoint >> 6) & 0x3f) | 0x80);
+        str[1] = (char)(((codepoint >> 12) & 0x3f) | 0x80);
+        str[0] = (char)(((codepoint >> 18) & 0x07) | 0xf0);
     }
     
     return (kari_value_t*)kari_create_string(str);
