@@ -55,4 +55,12 @@ K_FN(concat);
 K_FN(index_of);
 K_FN(interpolate);
 
+/* array */
+K_FN(push);
+K_FN(pop);
+K_FN(first);
+K_FN(last);
+K_FN(ind);
+K_FN(remove);
+
 #endif
