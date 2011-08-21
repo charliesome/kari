@@ -20,7 +20,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     kari_vec_t* tmp_vec;
     kari_array_token_t* tmp_ary;
     kari_dict_token_t* tmp_dict;
-    kari_dict_entry_token_t* tmp_dent;
+    kari_dict_entry_token_t* tmp_dent = NULL;
     char *tmp_s, *tmp_endptr;
     double d;
     bool is_after_assignment = false;
