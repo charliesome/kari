@@ -11,6 +11,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
     kari_context_t* lookup_ctx;
     kari_function_t* tmp_fun;
     kari_array_token_t* tmp_ary;
+    kari_vec_t* tmp_vec;
     size_t i = 0, tmp_i = 0;
     while(i < token_count || function_stack->count > 0) {
         if(i < token_count) {
@@ -100,7 +101,21 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         kari_vec_push(((kari_array_t*)value)->items, tmp_val);
                     }
                     break;
-                    
+                
+                case KARI_TOK_DICT:
+                    value = (kari_value_t*)GC_MALLOC(sizeof(kari_dict_val_t));
+                    value->type = KARI_DICT;
+                    ((kari_dict_val_t*)value)->items = new_kari_dict();
+                    tmp_vec = ((kari_dict_token_t*)tokens[i])->items;
+                    for(tmp_i = 0; tmp_i < tmp_vec->count; tmp_i++) {
+                        tmp_val = kari_execute(ctx, (kari_token_t**)((kari_dict_entry_token_t*)tmp_vec->entries[tmp_i])->tokens->entries,
+                            ((kari_dict_entry_token_t*)tmp_vec->entries[tmp_i])->tokens->count, err);
+                        if(tmp_val == NULL) {
+                            return NULL;
+                        }
+                        kari_dict_set(((kari_dict_val_t*)value)->items, ((kari_dict_entry_token_t*)tmp_vec->entries[tmp_i])->identifier, tmp_val);
+                    }
+                    break;
                     
                 default:
                     *err = "Internal error (unknown token)";

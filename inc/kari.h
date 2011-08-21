@@ -25,7 +25,8 @@ typedef enum kari_token_type {
     KARI_TOK_STRING,
     KARI_TOK_ASSIGN_TO_IDENTIFIER,
     KARI_TOK_FUNCTION,
-    KARI_TOK_ARRAY
+    KARI_TOK_ARRAY,
+    KARI_TOK_DICT
 } kari_token_type_t;
 
 typedef struct kari_token {
@@ -61,6 +62,16 @@ typedef struct kari_array_token {
     kari_vec_t* items;
 } kari_array_token_t;
 
+typedef struct kari_dict_entry_token {
+    char* identifier;
+    kari_vec_t* tokens;
+} kari_dict_entry_token_t;
+
+typedef struct kari_dict_token {
+    kari_token_t base;
+    kari_vec_t* items;
+} kari_dict_token_t;
+
 /*
 // RUNTIME VALUES
 */
@@ -72,7 +83,8 @@ typedef enum kari_value_type {
     KARI_FUNCTION = 0x81,
     KARI_TRUE = 0x40,
     KARI_FALSE = 0x41,
-    KARI_ARRAY = 0x05
+    KARI_ARRAY = 0x05,
+    KARI_DICT = 0x06
 } kari_value_type_t;
 #define K_IS_CALLABLE(t) (t & 0x80)
 #define K_IS_BOOLEAN(t) (t & 0x40)
@@ -96,6 +108,11 @@ typedef struct kari_array {
     kari_value_t base;
     kari_vec_t* items;
 } kari_array_t;
+
+typedef struct kari_dict_val {
+    kari_value_t base;
+    kari_dict_t* items;
+} kari_dict_val_t;
 
 typedef kari_value_t*(*kari_nfn_t)(void*,kari_value_t*,char**);
 typedef struct kari_native_function {

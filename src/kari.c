@@ -134,6 +134,44 @@ char* kari_inspect(kari_value_t* value)
             s[s_len++] = ']';
             s[s_len++] = 0;
             return s;
+        case KARI_DICT:
+            s_len = 0;
+            s_cap = 16;
+            s = (char*)GC_MALLOC(s_cap);
+            s[s_len++] = '{';
+            s[s_len++] = ' ';
+            for(i = 0; i < ((kari_dict_val_t*)value)->items->keys->count; i++) {
+                if(i != 0) {
+                    if(s_len + 5 > s_cap) {
+                        s_cap *= 2;
+                        s = (char*)GC_REALLOC(s, s_cap);
+                    }
+                    s[s_len++] = ',';
+                    s[s_len++] = ' ';
+                }
+                tmp_size = strlen((char*)((kari_dict_val_t*)value)->items->keys->entries[i]);
+                while(s_len + tmp_size + 5 > s_cap) {
+                    s_cap *= 2;
+                    s = (char*)GC_REALLOC(s, s_cap);
+                }
+                memcpy(s + s_len, (char*)((kari_dict_val_t*)value)->items->keys->entries[i], tmp_size);
+                s_len += tmp_size;
+                s[s_len++] = ':';
+                s[s_len++] = ' ';
+                tmp_s = kari_inspect((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]));
+                tmp_size = strlen(tmp_s);
+                while(s_len + tmp_size + 3 > s_cap) {
+                    s_cap *= 2;
+                    s = (char*)GC_REALLOC(s, s_cap);
+                }
+                memcpy(s + s_len, tmp_s, tmp_size);
+                s_len += tmp_size;
+            }
+            s[s_len++] = ' ';
+            s[s_len++] = '}';
+            s[s_len] = 0;
+            return s;
         default:
             return "(unknown type)";
     }

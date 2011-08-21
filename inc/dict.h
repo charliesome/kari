@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "vec.h"
 
 typedef struct kari_dict_branch {
     void* value;
@@ -11,6 +12,7 @@ typedef struct kari_dict_branch {
 } kari_dict_branch_t;
 
 typedef struct kari_dict {
+    kari_vec_t* keys;
     kari_dict_branch_t* branch;
 } kari_dict_t;
 

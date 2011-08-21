@@ -19,6 +19,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     kari_token_t* tmp_tok;
     kari_vec_t* tmp_vec;
     kari_array_token_t* tmp_ary;
+    kari_dict_token_t* tmp_dict;
+    kari_dict_entry_token_t* tmp_dent;
     char *tmp_s, *tmp_endptr;
     double d;
     bool is_after_assignment = false;
@@ -131,6 +133,71 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             *err = "Unexpected ']'";
             return 0;
         }
+        if(source[i] == '{') {
+            tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_dict_token_t));
+            tmp_tok->type = KARI_TOK_DICT;
+            kari_vec_push(tokens, tmp_tok);
+            
+            ((kari_dict_token_t*)tmp_tok)->items = new_kari_vec();
+            tmp_dent = (kari_dict_entry_token_t*)GC_MALLOC(sizeof(kari_dict_entry_token_t));
+            tmp_dent->tokens = new_kari_vec();
+            kari_vec_push(((kari_dict_token_t*)tmp_tok)->items, tmp_dent);
+            kari_vec_push(tokens_stack, tmp_dent->tokens);
+            tokens = tmp_dent->tokens;
+            ++i;
+            continue;
+        }
+        if(source[i] == ':') {
+            if(tokens_stack->count > 1) {
+                tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count-1])->type == KARI_TOK_DICT) {
+                    /* ok! */
+                    tmp_dict = (kari_dict_token_t*)tmp_vec->entries[tmp_vec->count-1];
+                    tmp_dent = (kari_dict_entry_token_t*)tmp_dict->items->entries[tmp_dict->items->count - 1];
+                    if(tokens->count != 1) {
+                        *err = "':' must follow dict key";
+                        return 0;
+                    }
+                    tmp_tok = (kari_token_t*)kari_vec_pop(tokens);
+                    if(tmp_tok->type != KARI_TOK_IDENTIFIER || ((kari_identifier_token_t*)tmp_tok)->is_reference == true) {
+                        *err = "':' must follow dict key";
+                        return 0;
+                    }
+                    if(tmp_dent->identifier != NULL) {
+                        *err = "Unexpected ':'";
+                        return 0;
+                    }
+                    tmp_dent->identifier = ((kari_identifier_token_t*)tmp_tok)->str;
+                    ++i;
+                    continue;
+                }
+            }
+            *err = "Unexpected ':'";
+            return 0;
+        }
+        if(source[i] == '}') {
+            if(tokens_stack->count > 1) {
+                tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
+                if(tmp_vec->count > 0 && ((kari_token_t*)tmp_vec->entries[tmp_vec->count-1])->type == KARI_TOK_DICT) {
+                    /* ok! */
+                    tmp_dict = (kari_dict_token_t*)tmp_vec->entries[tmp_vec->count - 1];
+                    tmp_dent = ((kari_dict_entry_token_t*)tmp_dict->items->entries[tmp_dict->items->count - 1]);
+                    if(tmp_dent->tokens->count == 0 && tmp_dent->identifier == NULL) {
+                        kari_vec_pop(tmp_dict->items);
+                    }
+                    if(tmp_dent->tokens->count > 0 && tmp_dent->identifier == NULL) {
+                        *err = "Missing key in dict entry";
+                        return 0;
+                    }
+                    kari_vec_pop(tokens_stack);
+                    tokens = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 1];
+                    ++i;
+                    continue;
+                }
+            }
+            *err = "Unexpected '}'";
+            return 0;
+        }
         if(source[i] == ',') {
             if(tokens_stack->count > 1) {
                 tmp_vec = (kari_vec_t*)tokens_stack->entries[tokens_stack->count - 2];
@@ -146,7 +213,26 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                             
                             ++i;
                             continue;
+                        
+                        case KARI_TOK_DICT:
                             
+                            tmp_dict = (kari_dict_token_t*)tmp_vec->entries[tmp_vec->count - 1];
+                            kari_vec_pop(tokens_stack);
+                            
+                            if(tmp_dent->identifier == NULL) {
+                                *err = "Missing key in dict entry";
+                                return 0;
+                            }
+                            
+                            tmp_dent = (kari_dict_entry_token_t*)GC_MALLOC(sizeof(kari_dict_entry_token_t));
+                            tmp_dent->tokens = new_kari_vec();
+                            kari_vec_push(tmp_dict->items, tmp_dent);
+                            kari_vec_push(tokens_stack, tmp_dent->tokens);
+                            tokens = tmp_dent->tokens;
+                            
+                            ++i;
+                            continue;
+                        
                         default:
                             *err = "Unexpected ','";
                             return 0;

@@ -33,6 +33,9 @@ K_FN(_eq_2)
         case KARI_ARRAY:
             /* @TODO do linear comparison of two arrays */
             break;
+        case KARI_DICT:
+            /* @TODO */
+            break;
     }
     return kari_false();
 }
