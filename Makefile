@@ -16,7 +16,7 @@ repl/%.o: repl/%.c inc/*.h
 
 libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o \
 						src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
-						src/lib/string.o src/lib/array.o
+						src/lib/string.o src/lib/array.o src/lib/bible.o
 	ar r libkari.a src/*.o src/lib/*.o deps/gc/*.o 2> /dev/null
 
 src/%.o: src/%.c inc/%.h

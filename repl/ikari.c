@@ -55,6 +55,7 @@ int main(int argc, char** argv)
             exit(1);
         }
     } else {
+        kari_eval(ctx, "put reading! put!", &err);
         while(true) {
             if(feof(stdin)) {
                 break;

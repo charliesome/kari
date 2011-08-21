@@ -9,6 +9,9 @@
     #define KASSERT(cond, msg) if(!(cond)) { *err = (msg); return NULL; }
 #endif
 
+/* praise the Lord */
+K_FN(reading);
+
 /* math */
 K_FN(add);
 K_FN(sub);
