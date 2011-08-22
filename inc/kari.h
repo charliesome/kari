@@ -26,7 +26,9 @@ typedef enum kari_token_type {
     KARI_TOK_ASSIGN_TO_IDENTIFIER,
     KARI_TOK_FUNCTION,
     KARI_TOK_ARRAY,
-    KARI_TOK_DICT
+    KARI_TOK_DICT,
+    KARI_TOK_MEMBER_ACCESS_STR,
+    KARI_TOK_MEMBER_ACCESS_INT
 } kari_token_type_t;
 
 typedef struct kari_token {

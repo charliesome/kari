@@ -54,6 +54,41 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     kari_dict_set(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str, value);
                     break;
                 
+                case KARI_TOK_MEMBER_ACCESS_STR:
+                    if(value == NULL || value->type != KARI_DICT) {
+                        *err = "Attempted to access string key from a non-dictionary value";
+                        return NULL;
+                    }
+                    value = (kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items, ((kari_identifier_token_t*)tokens[i])->str);
+                    if(value == NULL) {
+                        value = kari_nil();
+                    }
+                    if(K_IS_CALLABLE(value->type)) {
+                        kari_vec_push(function_stack, value);
+                        value = NULL;
+                    }
+                    break;
+                    
+                case KARI_TOK_MEMBER_ACCESS_INT:
+                    if(value == NULL || value->type != KARI_ARRAY) {
+                        *err = "Attempted to access index from a non-array value";
+                        return NULL;
+                    }
+                    if(((kari_number_token_t*)tokens[i])->number < 0) {
+                        tmp_i = ((kari_array_t*)value)->items->count + (long)((kari_number_token_t*)tokens[i])->number;
+                    } else {
+                        tmp_i = (long)((kari_number_token_t*)tokens[i])->number;
+                    }
+                    if(tmp_i >= ((kari_array_t*)value)->items->count) {
+                        value = kari_nil();
+                    } else {
+                        value = (kari_value_t*)((kari_array_t*)value)->items->entries[tmp_i];
+                    }
+                    if(K_IS_CALLABLE(value->type)) {
+                        kari_vec_push(function_stack, value);
+                        value = NULL;
+                    }
+                    break;
                 
                 case KARI_TOK_FUNCTION:
                     tmp_fun = (kari_function_t*)GC_MALLOC(sizeof(kari_function_t));

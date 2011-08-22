@@ -7,7 +7,7 @@
 #include "kari.h"
 
 static bool is_identifier_char(char c, bool first) {
-    return isalpha(c) || (first && isdigit(c)) || c == '_';
+    return isalpha(c) || (!first && isdigit(c)) || (first && c == '$') || c == '_';
 }
 
 size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
@@ -25,6 +25,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     double d;
     bool is_after_assignment = false;
     bool is_reference = false;
+    bool is_member_access = false;
     
     kari_vec_push(tokens_stack, tokens);
     
@@ -34,20 +35,30 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             continue;
         }
         /* identifier */
-        if(!is_reference && source[i] == '@') {
+        if(source[i] == '@' && !is_reference && !is_after_assignment) {
             is_reference = true;
             ++i;
         }
-        if(is_identifier_char(source[i], false)) {
+        if(source[i] == '.' && !is_member_access && !is_reference && !is_after_assignment) {
+            is_member_access = true;
+            ++i;
+        }
+        if(is_identifier_char(source[i], true)) {
             identifier_start = i;
-            while(++i < source_len && is_identifier_char(source[i], true));
+            while(++i < source_len && is_identifier_char(source[i], false));
             
             tmp_s = (char*)GC_MALLOC(i - identifier_start + 1);
             memcpy(tmp_s, source + identifier_start, i - identifier_start);
             tmp_s[i - identifier_start] = 0;
             
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_identifier_token_t));
-            tmp_tok->type = (is_after_assignment ? KARI_TOK_ASSIGN_TO_IDENTIFIER : KARI_TOK_IDENTIFIER);
+            if(is_after_assignment) {
+                tmp_tok->type = KARI_TOK_ASSIGN_TO_IDENTIFIER;
+            } else if(is_member_access) {
+                tmp_tok->type = KARI_TOK_MEMBER_ACCESS_STR;
+            } else {
+                tmp_tok->type = KARI_TOK_IDENTIFIER;
+            }
             ((kari_identifier_token_t*)tmp_tok)->is_reference = is_reference;
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
             ((kari_identifier_token_t*)tmp_tok)->len = i - identifier_start;
@@ -55,7 +66,12 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             
             is_reference = false;
             is_after_assignment = false;
+            is_member_access = false;
             continue;
+        }
+        if(is_member_access && !(source[i] >= '0' && source[i] <= '9') && source[i] != '-') {
+            *err = "Expected integer index or identifier after member access operator";
+            return 0;
         }
         if(is_reference) {
             *err = "Expected identifier after reference operator";
@@ -290,7 +306,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             i = tmp_endptr - source;
             
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_number_token_t));
-            tmp_tok->type = KARI_TOK_NUMBER;
+            tmp_tok->type = is_member_access ? KARI_TOK_MEMBER_ACCESS_INT : KARI_TOK_NUMBER;
             ((kari_number_token_t*)tmp_tok)->number = d;
             kari_vec_push(tokens, tmp_tok);
             
