@@ -36,7 +36,7 @@ bool kari_dict_set(kari_dict_t* dict, char* key, void* value)
 bool kari_dict_exists(kari_dict_t* dict, char* key)
 {
     kari_dict_branch_t* e = kari_dict_find(dict, key);
-    if(e == NULL) {
+    if(e == NULL || e->value == NULL) {
         return false;
     } else {
         return true;

@@ -118,7 +118,13 @@ char* kari_inspect(kari_value_t* value)
                     s[s_len++] = ',';
                     s[s_len++] = ' ';
                 }
-                tmp_s = kari_inspect((kari_value_t*)((kari_array_t*)value)->items->entries[i]);
+                if(((kari_value_t*)((kari_array_t*)value)->items->entries[i])->type == KARI_ARRAY) {
+                    tmp_s = "(array)";
+                } else if(((kari_value_t*)((kari_array_t*)value)->items->entries[i])->type == KARI_ARRAY) {
+                    tmp_s = "(dict)";
+                } else {
+                    tmp_s = kari_inspect((kari_value_t*)((kari_array_t*)value)->items->entries[i]);
+                }
                 tmp_size = strlen(tmp_s);
                 while(s_len + tmp_size > s_cap) {
                     s_cap *= 2;
@@ -158,8 +164,16 @@ char* kari_inspect(kari_value_t* value)
                 s_len += tmp_size;
                 s[s_len++] = ':';
                 s[s_len++] = ' ';
-                tmp_s = kari_inspect((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
-                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]));
+                if(((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]))->type == KARI_ARRAY) {
+                    tmp_s = "(array)";
+                } else if(((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]))->type == KARI_DICT) {
+                    tmp_s = "(dict)";
+                } else {
+                    tmp_s = kari_inspect((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                        (char*)((kari_dict_val_t*)value)->items->keys->entries[i]));   
+                }
                 tmp_size = strlen(tmp_s);
                 while(s_len + tmp_size + 3 > s_cap) {
                     s_cap *= 2;

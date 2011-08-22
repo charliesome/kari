@@ -7,10 +7,11 @@
     #define K_REF(name) kari_stdlib_##name
     #define K_FN(name) kari_value_t* K_REF(name)(void* state, kari_value_t* argument, char** err)
     #define KASSERT(cond, msg) if(!(cond)) { *err = (msg); return NULL; }
+    #define K_ALIAS(name) return K_REF(name)(state, argument, err)
 #endif
 
 /* praise the Lord */
-K_FN(reading);
+/* K_FN(reading); */
 
 /* math */
 K_FN(add);
@@ -65,5 +66,12 @@ K_FN(first);
 K_FN(last);
 K_FN(ind);
 K_FN(remove);
+K_FN(each);
+K_FN(map);
+K_FN(foldl);
+K_FN(reduce); /* alias of foldl */
+
+/* dict */
+K_FN(dset);
 
 #endif
