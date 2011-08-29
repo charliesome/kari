@@ -6,15 +6,9 @@
 
 kari_context_t* kari_create_std_context()
 {    
-    kari_dict_val_t* tmp_dict;
     kari_context_t* ctx = (kari_context_t*)GC_MALLOC(sizeof(kari_context_t));
-    ctx->variables = new_kari_dict();    
-    
-    tmp_dict = (kari_dict_val_t*)GC_MALLOC(sizeof(tmp_dict));
-    tmp_dict->base.type = KARI_DICT;
-    tmp_dict->items = ctx->variables;
-    kari_dict_set(ctx->variables, "$context", tmp_dict);
-    kari_dict_set(ctx->variables, "$parent", kari_nil());
+    ctx->variables = new_kari_dict();
+    ctx->parent = NULL;
     
     kari_load_stdlib(ctx);
     return ctx;
@@ -48,25 +42,11 @@ kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err)
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err)
 {
     kari_context_t* ctx;
-    kari_dict_val_t* tmp_dict;
     switch(function->type) {
         case KARI_FUNCTION:
             ctx = (kari_context_t*)GC_MALLOC(sizeof(kari_context_t));
             ctx->variables = new_kari_dict();
-            
-            tmp_dict = (kari_dict_val_t*)GC_MALLOC(sizeof(tmp_dict));
-            tmp_dict->base.type = KARI_DICT;
-            tmp_dict->items = ctx->variables;
-            kari_dict_set(ctx->variables, "$context", tmp_dict);
-            
-            if(((kari_function_t*)function)->parent == NULL) {
-                tmp_dict = (kari_dict_val_t*)kari_nil();
-            } else {
-                tmp_dict = (kari_dict_val_t*)GC_MALLOC(sizeof(tmp_dict));
-                tmp_dict->base.type = KARI_DICT;
-                tmp_dict->items = ((kari_function_t*)function)->parent->variables;
-            }
-            kari_dict_set(ctx->variables, "$parent", tmp_dict);
+            ctx->parent = ((kari_function_t*)function)->parent;
             
             kari_dict_set(ctx->variables, ((kari_function_t*)function)->argument, argument);
             return kari_execute(ctx, ((kari_function_t*)function)->tokens, ((kari_function_t*)function)->token_count, err);

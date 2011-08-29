@@ -11,6 +11,7 @@
 // CONTEXT
 */
 typedef struct kari_context {
+    struct kari_context* parent;
     kari_dict_t* variables;
 } kari_context_t;
 

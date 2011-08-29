@@ -8,11 +8,10 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
 {
     kari_vec_t* function_stack = new_kari_vec();
     kari_value_t *value = NULL, *tmp_val;
-    kari_dict_t* lookup_dict;
+    kari_context_t* lookup_ctx;
     kari_function_t* tmp_fun;
     kari_array_token_t* tmp_ary;
     kari_vec_t* tmp_vec;
-    kari_dict_val_t* tmp_dict;
     size_t i = 0, tmp_i = 0;
     while(i < token_count || function_stack->count > 0) {
         if(i < token_count) {
@@ -20,21 +19,17 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 
                 
                 case KARI_TOK_IDENTIFIER:
-                    lookup_dict = ctx->variables;
-                    while(lookup_dict != NULL) {
-                        if(kari_dict_exists(lookup_dict, ((kari_identifier_token_t*)tokens[i])->str)) {
-                            value = (kari_value_t*)kari_dict_find_value(lookup_dict, ((kari_identifier_token_t*)tokens[i])->str);
+                    lookup_ctx = ctx;
+                    while(lookup_ctx != NULL) {
+                        if(kari_dict_exists(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str)) {
+                            value = (kari_value_t*)kari_dict_find_value(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str);
                             if(K_IS_CALLABLE(value->type)) {
                                 kari_vec_push(function_stack, value);
                                 value = NULL;
                             }
                             goto found_value;
                         }
-                        tmp_dict = (kari_dict_val_t*)kari_dict_find_value(lookup_dict, "$parent");
-                        if(tmp_dict == NULL || tmp_dict->base.type != KARI_DICT) {
-                            break;
-                        }
-                        lookup_dict = tmp_dict->items;
+                        lookup_ctx = lookup_ctx->parent;
                     }
                     *err = (char*)GC_MALLOC(25 + ((kari_identifier_token_t*)tokens[i])->len);
                     sprintf(*err, "Undefined identifier '%s'", ((kari_identifier_token_t*)tokens[i])->str);
@@ -46,21 +41,17 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     if(value == NULL) {
                         value = (kari_value_t*)kari_vec_pop(function_stack);
                     }
-                    lookup_dict = ctx->variables;
-                    while(lookup_dict != NULL) {
-                        if(kari_dict_exists(lookup_dict, ((kari_identifier_token_t*)tokens[i])->str)) {
+                    lookup_ctx = ctx;
+                    while(lookup_ctx != NULL) {
+                        if(kari_dict_exists(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str)) {
                             break;
                         }
-                        tmp_dict = (kari_dict_val_t*)kari_dict_find_value(lookup_dict, "$parent");
-                        if(tmp_dict == NULL || tmp_dict->base.type != KARI_DICT) {
-                            break;
-                        }
-                        lookup_dict = tmp_dict->items;
+                        lookup_ctx = lookup_ctx->parent;
                     }
-                    if(lookup_dict == NULL) {
-                        lookup_dict = ctx->variables;
+                    if(lookup_ctx == NULL) {
+                        lookup_ctx = ctx;
                     }
-                    kari_dict_set(lookup_dict, ((kari_identifier_token_t*)tokens[i])->str, value);
+                    kari_dict_set(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str, value);
                     break;
                 
                 case KARI_TOK_MEMBER_ACCESS_STR:
@@ -125,11 +116,9 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     ((kari_string_t*)value)->len = ((kari_string_token_t*)tokens[i])->len;
                     break;
                     
-                    
                 case KARI_TOK_NIL:
                     value = kari_nil();
                     break;
-                    
                     
                 case KARI_TOK_ARRAY:    
                     value = (kari_value_t*)GC_MALLOC(sizeof(kari_array_t));
