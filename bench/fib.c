@@ -1,22 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-long long fib_iter(long long a, long long b, int i)
+double fib(int n)
 {
-    if(i < 2) {
-        return a;
-    } else {
-        return fib_iter(a + b, a, i - 1);
+    double a = 1, b = 0, c;
+    int i;
+    for(i = 1; i < n; i++) {
+        c = b;
+        b = a;
+        a = a + c;
     }
-}
-
-long long fib(int n)
-{
-    return fib_iter(1, 0, n);
+    return a;
 }
 
 int main()
 {
-    fib(100000);    
+    printf("%lf\n", fib(10));
     return 0;
 }
