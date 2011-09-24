@@ -71,5 +71,6 @@ K_FN(reduce); /* alias of foldl */
 
 /* dict */
 K_FN(dset);
+K_FN(dget);
 
 #endif
