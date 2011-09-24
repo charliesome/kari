@@ -53,3 +53,18 @@ K_FN(dget)
     KASSERT(argument->type == KARI_DICT, "Expected dictionary");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_dget_2), ((kari_dict_val_t*)argument)->items);
 }
+
+K_FN(keys)
+{
+    size_t i;
+    kari_dict_t* d;
+    kari_vec_t* v = new_kari_vec();
+    kari_array_t* a = kari_create_array();
+    KASSERT(argument->type == KARI_DICT, "Expected dictionary");
+    d = ((kari_dict_val_t*)argument)->items;
+    for(i = 0; i < d->keys->count; i++) {
+        kari_vec_push(v, kari_create_string((char*)d->keys->entries[i]));
+    }
+    a->items = v;
+    return (kari_value_t*)a;
+}
