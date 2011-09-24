@@ -24,13 +24,13 @@ K_FN(_if_2)
     /* we don't call the true function right now even if the bool was true,
        however if the bool was true, we'll replace the state passed to the
        next function with the true function for it to call. */
-    return (kari_value_t*)kari_create_native_function(K_REF(_if_3),
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_if_3),
         (((kari_value_t*)state)->type == KARI_TRUE) ? argument : state);
 }
 K_FN(if)
 {
     KASSERT(K_IS_BOOLEAN(argument->type), "Expected true/false value");
-    return (kari_value_t*)kari_create_native_function(K_REF(_if_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_if_2), argument);
 }
 
 /* while */
@@ -57,7 +57,7 @@ K_FN(_while_2)
 K_FN(while)
 {
     KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
-    return (kari_value_t*)kari_create_native_function(K_REF(_while_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_while_2), argument);
 }
 
 /* for */
@@ -85,7 +85,7 @@ K_FN(_for_2)
     struct for_state* st = (struct for_state*)state;
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
     st->to = (int)((kari_number_t*)argument)->number;
-    return (kari_value_t*)kari_create_native_function(K_REF(_for_3), st);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_for_3), st);
 }
 
 K_FN(for)
@@ -93,6 +93,6 @@ K_FN(for)
     struct for_state* st = (struct for_state*)GC_MALLOC(sizeof(struct for_state));
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
     st->from = (int)((kari_number_t*)argument)->number;
-    return (kari_value_t*)kari_create_native_function(K_REF(_for_2), st);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_for_2), st);
 }
 

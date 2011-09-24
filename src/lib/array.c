@@ -16,7 +16,7 @@ K_FN(_push_2)
 K_FN(push)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_push_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_push_2), argument);
 }
 
 /* pop */
@@ -70,7 +70,7 @@ K_FN(_ind_2)
 K_FN(ind)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_ind_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_ind_2), argument);
 }
 
 /* remove */
@@ -95,7 +95,7 @@ K_FN(_remove_2)
 K_FN(remove)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_ind_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_ind_2), argument);
 }
 
 /* each */
@@ -114,7 +114,7 @@ K_FN(_each_2)
 K_FN(each)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_each_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_each_2), argument);
 }
 
 /* map */
@@ -142,7 +142,7 @@ K_FN(_map_2)
 K_FN(map)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_map_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_map_2), argument);
 }
 
 /* foldl */
@@ -172,7 +172,7 @@ K_FN(_foldl_2)
 K_FN(foldl)
 {
     KASSERT(argument->type == KARI_ARRAY, "Expected array");
-    return (kari_value_t*)kari_create_native_function(K_REF(_foldl_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_foldl_2), argument);
 }
 
 /* reduce */

@@ -107,7 +107,7 @@ K_FN(_split_2)
 K_FN(split)
 {    
     KASSERT(argument->type == KARI_STRING, "Expected string");
-    return (kari_value_t*)kari_create_native_function(K_REF(_split_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_split_2), argument);
 }
 
 /* concat */
@@ -123,7 +123,7 @@ K_FN(_concat_2)
 
 K_FN(concat)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_concat_2), kari_str(argument));
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_concat_2), kari_str(argument));
 }
 
 /* index_of */
@@ -149,7 +149,7 @@ K_FN(_index_of_2)
 K_FN(index_of)
 {
     KASSERT(argument->type == KARI_STRING, "Expected string");
-    return (kari_value_t*)kari_create_native_function(K_REF(_index_of_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_index_of_2), argument);
 }
 
 /* interpolate */
@@ -193,5 +193,5 @@ K_FN(_interpolate_2)
 K_FN(interpolate)
 {
     KASSERT(argument->type == KARI_STRING, "Expected string");
-    return (kari_value_t*)kari_create_native_function(K_REF(_interpolate_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_interpolate_2), argument);
 }

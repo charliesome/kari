@@ -42,7 +42,7 @@ K_FN(_eq_2)
 
 K_FN(eq)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_eq_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_eq_2), argument);
 }
 
 /* lt */
@@ -62,7 +62,7 @@ K_FN(_lt_2)
 
 K_FN(lt)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_lt_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_lt_2), argument);
 }
 
 /* lte */
@@ -82,7 +82,7 @@ K_FN(_lte_2)
 
 K_FN(lte)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_lte_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_lte_2), argument);
 }
 
 /* gt */
@@ -102,7 +102,7 @@ K_FN(_gt_2)
 
 K_FN(gt)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_gt_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_gt_2), argument);
 }
 
 
@@ -123,5 +123,5 @@ K_FN(_gte_2)
 
 K_FN(gte)
 {
-    return (kari_value_t*)kari_create_native_function(K_REF(_gte_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_gte_2), argument);
 }

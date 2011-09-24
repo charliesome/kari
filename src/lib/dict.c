@@ -25,7 +25,7 @@ K_FN(_dset_2)
     struct dset_state* st = (struct dset_state*)state;
     KASSERT(argument->type == KARI_STRING, "Expected string");
     st->key = ((kari_string_t*)argument)->str;
-    return (kari_value_t*)kari_create_native_function(K_REF(_dset_3), st);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_dset_3), st);
 }
 
 K_FN(dset)
@@ -33,5 +33,5 @@ K_FN(dset)
     struct dset_state* st = (struct dset_state*)GC_MALLOC(sizeof(struct dset_state));
     KASSERT(argument->type == KARI_DICT, "Expected dictionary");
     st->dict = (kari_dict_val_t*)argument;
-    return (kari_value_t*)kari_create_native_function(K_REF(_dset_2), st);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_dset_2), st);
 }

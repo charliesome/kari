@@ -220,13 +220,33 @@ kari_string_t* kari_create_string(char* str)
     return s;
 }
 
-kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state)
+kari_native_function_t* kari_create_native_function(kari_context_t* context, kari_nfn_t fn, void* state)
 {
     kari_native_function_t* f = (kari_native_function_t*)GC_MALLOC(sizeof(kari_native_function_t));
     f->base.type = KARI_NATIVE_FUNCTION;
     f->state = state;
+    f->context = context;
     f->call = fn;
     return f;
+}
+
+kari_value_t* kari_var_get(kari_context_t* ctx, char* name)
+{
+    while(ctx) {
+        if(kari_dict_exists(ctx->variables, name)) {
+            return (kari_value_t*)kari_dict_find_value(ctx->variables, name);
+        }
+        ctx = ctx->parent;
+    }
+    return NULL;
+}
+
+kari_array_t* kari_create_array()
+{
+    kari_array_t* arr = (kari_array_t*)GC_MALLOC(sizeof(kari_array_t));
+    arr->base.type = KARI_ARRAY;
+    arr->items = new_kari_vec();
+    return arr;
 }
 
 size_t kari_utf8_strlen(char* s)

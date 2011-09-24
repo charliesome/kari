@@ -5,13 +5,10 @@
 
 #ifndef K_FN
     #define K_REF(name) kari_stdlib_##name
-    #define K_FN(name) kari_value_t* K_REF(name)(void* state, kari_value_t* argument, char** err)
+    #define K_FN(name) kari_value_t* K_REF(name)(kari_context_t* context, void* state, kari_value_t* argument, char** err)
     #define KASSERT(cond, msg) if(!(cond)) { *err = (msg); return NULL; }
-    #define K_ALIAS(name) return K_REF(name)(state, argument, err)
+    #define K_ALIAS(name) return K_REF(name)(context, state, argument, err)
 #endif
-
-/* praise the Lord */
-/* K_FN(reading); */
 
 /* math */
 K_FN(add);
@@ -37,6 +34,7 @@ K_FN(quit);
 K_FN(str);
 K_FN(put);
 K_FN(try);
+K_FN(require);
 
 /* control flow */
 K_FN(if);

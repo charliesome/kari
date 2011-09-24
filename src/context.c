@@ -14,12 +14,13 @@ kari_context_t* kari_create_std_context()
     return ctx;
 }
 
-#define EXPOSE(fn) kari_dict_set(context->variables, #fn, kari_create_native_function(kari_stdlib_##fn, NULL))
+#define EXPOSE(fn) kari_dict_set(context->variables, #fn, kari_create_native_function(context, kari_stdlib_##fn, NULL))
 void kari_load_stdlib(kari_context_t* context)
 {    
     kari_dict_set(context->variables, "true", kari_true());
     kari_dict_set(context->variables, "false", kari_false());
     kari_dict_set(context->variables, "nil", kari_nil());
+    kari_dict_set(context->variables, "$inc", kari_create_array());
     
     #undef K_FN
     #undef _KARI_STDLIB
@@ -52,7 +53,7 @@ kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** e
             return kari_execute(ctx, ((kari_function_t*)function)->tokens, ((kari_function_t*)function)->token_count, err);
         case KARI_NATIVE_FUNCTION:
             *err = NULL;
-            return ((kari_native_function_t*)function)->call(((kari_native_function_t*)function)->state, argument, err);
+            return ((kari_native_function_t*)function)->call(((kari_native_function_t*)function)->context, ((kari_native_function_t*)function)->state, argument, err);
         default:
             *err = (char*)GC_MALLOC(36 + strlen(kari_string_for_value_type_t(function->type)));
             sprintf(*err, "Value of type %s called as function", kari_string_for_value_type_t(function->type));

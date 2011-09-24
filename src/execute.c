@@ -23,7 +23,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     while(lookup_ctx != NULL) {
                         if(kari_dict_exists(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str)) {
                             value = (kari_value_t*)kari_dict_find_value(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->str);
-                            if(K_IS_CALLABLE(value->type)) {
+                            if(K_IS_CALLABLE(value->type) && ((kari_identifier_token_t*)tokens[i])->is_reference == false) {
                                 kari_vec_push(function_stack, value);
                                 value = NULL;
                             }

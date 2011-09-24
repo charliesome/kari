@@ -15,7 +15,7 @@ K_FN(_add_2)
 K_FN(add)
 {
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_native_function(K_REF(_add_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_add_2), argument);
 }
 
 /* sub */
@@ -27,7 +27,7 @@ K_FN(_sub_2)
 K_FN(sub)
 {
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_native_function(K_REF(_sub_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_sub_2), argument);
 }
 
 /* mul */
@@ -39,7 +39,7 @@ K_FN(_mul_2)
 K_FN(mul)
 {
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_native_function(K_REF(_mul_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_mul_2), argument);
 }
 
 /* div */
@@ -51,7 +51,7 @@ K_FN(_div_2)
 K_FN(div)
 {
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_native_function(K_REF(_div_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_div_2), argument);
 }
 
 /* mod */
@@ -63,7 +63,7 @@ K_FN(_mod_2)
 K_FN(mod)
 {
     KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_native_function(K_REF(_mod_2), argument);
+    return (kari_value_t*)kari_create_native_function(context, K_REF(_mod_2), argument);
 }
 
 /* odd */

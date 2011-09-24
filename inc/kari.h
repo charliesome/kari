@@ -116,11 +116,12 @@ typedef struct kari_dict_val {
     kari_dict_t* items;
 } kari_dict_val_t;
 
-typedef kari_value_t*(*kari_nfn_t)(void*,kari_value_t*,char**);
+typedef kari_value_t*(*kari_nfn_t)(kari_context_t*,void*,kari_value_t*,char**);
 typedef struct kari_native_function {
     kari_value_t base;
+    kari_context_t* context;
     void* state;
-    kari_value_t*(*call)(void*, kari_value_t*, char**);
+    kari_value_t*(*call)(kari_context_t*, void*, kari_value_t*, char**);
 } kari_native_function_t;
 
 typedef struct kari_function {
@@ -144,6 +145,7 @@ kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** e
 size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err);
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err);
 kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err);
+kari_value_t* kari_var_get(kari_context_t* ctx, char* name);
 char* kari_string_for_value_type_t(kari_value_type_t t);
 char* kari_string_for_token_type_t(kari_token_type_t t);
 char* kari_inspect(kari_value_t* value);
@@ -151,7 +153,8 @@ char* kari_str(kari_value_t* value);
 
 kari_number_t* kari_create_number(double number);
 kari_string_t* kari_create_string(char* str);
-kari_native_function_t* kari_create_native_function(kari_nfn_t fn, void* state);
+kari_array_t* kari_create_array();
+kari_native_function_t* kari_create_native_function(kari_context_t* context, kari_nfn_t fn, void* state);
 
 size_t kari_utf8_strlen(char* s);
 
