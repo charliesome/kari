@@ -1,0 +1,6 @@
+(fn -> (args ->
+	each args (arg ->
+		fn arg => fn
+	)
+	fn
+)) => apply
