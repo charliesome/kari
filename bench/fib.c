@@ -5,7 +5,7 @@ double fib(int n)
 {
     double a = 1, b = 0, c;
     int i;
-    for(i = 1; i < n; i++) {
+    for(i = 1; i <= n; i++) {
         c = b;
         b = a;
         a = a + c;
@@ -15,6 +15,6 @@ double fib(int n)
 
 int main()
 {
-    printf("%lf\n", fib(10));
+    printf("%lf\n", fib(100));
     return 0;
 }

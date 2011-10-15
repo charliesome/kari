@@ -88,7 +88,12 @@ char* kari_inspect(kari_value_t* value)
             s = (char*)GC_MALLOC(32);
             sprintf(s, "%f", ((kari_number_t*)value)->number);
             for(i = strlen(s) - 1; s[i] == '0' || s[i] == '.'; i--) {
-                s[i] = 0;
+                if(s[i] == '.') {
+                    s[i] = 0;
+                    break;
+                } else {
+                    s[i] = 0;
+                }
             }
             if(s[0] == 0) {
                 s[0] = '0';
