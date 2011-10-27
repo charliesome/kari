@@ -1,20 +1,24 @@
-CFLAGS=-ansi -g -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
+CFLAGS=-ansi -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
 
 all: deps/gc/libgc.la libkari.a repl
 
+release:
+	@make clean
+	make all CFLAGS="-ansi -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/" 
+
 clean:
-	rm src/*.o
-	rm src/lib/*.o
-	rm repl/*.o
-	rm libkari.a
-	rm ikari
+	rm -f src/*.o
+	rm -f src/lib/*.o
+	rm -f repl/*.o
+	rm -f libkari.a
+	rm -f ikari
 
 repl: libkari.a repl/ikari.o
 	$(CC) $(CFLAGS) -o ikari libkari.a repl/*.o
 
 repl/%.o: repl/%.c inc/*.h
 
-libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o \
+libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o src/st.o \
 						src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
 						src/lib/string.o src/lib/array.o src/lib/dict.o
 	ar r libkari.a src/*.o src/lib/*.o deps/gc/*.o 2> /dev/null
