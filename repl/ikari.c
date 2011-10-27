@@ -4,6 +4,10 @@
 #include <string.h>
 #include "kari.h"
 
+char* startup =
+    #include ".startup.kari.inc"
+;
+
 char* readstr(bool end_on_newline)
 {
     int c;
@@ -42,6 +46,11 @@ int main(int argc, char** argv)
         printf("Interactive Kari\n\n");
     }
     ctx = kari_create_std_context();
+    kari_eval(ctx, startup, &err);
+    if(err) {
+        fprintf(stderr, "Could not start: %s\n", err);
+        exit(1);
+    }
     
     if(execute_mode) {
         tokens_count = kari_parse(readstr(false), &tokens, &err);

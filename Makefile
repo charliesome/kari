@@ -13,10 +13,13 @@ clean:
 	rm -f libkari.a
 	rm -f ikari
 
-repl: libkari.a repl/ikari.o
+repl: libkari.a repl/.startup.kari.inc repl/ikari.o
 	$(CC) $(CFLAGS) -o ikari libkari.a repl/*.o
 
 repl/%.o: repl/%.c inc/*.h
+
+repl/.startup.kari.inc: repl/startup.kari
+	perl -e 'shift; while(<>) { s/"/\\"/g; print "\""; print; print "\"\n"; }' < repl/startup.kari > repl/.startup.kari.inc
 
 libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o src/st.o \
 						src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
