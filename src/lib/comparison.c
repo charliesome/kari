@@ -33,6 +33,8 @@ K_FN(_eq_2)
         case KARI_ARRAY:
             /* @TODO do linear comparison of two arrays */
             break;
+        case KARI_DATA:
+            return kari_boolean(((kari_data_t*)oth)->ptr == ((kari_data_t*)argument)->ptr);
         case KARI_DICT:
             /* @TODO */
             break;

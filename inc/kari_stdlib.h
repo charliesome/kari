@@ -74,4 +74,8 @@ K_FN(dset);
 K_FN(dget);
 K_FN(keys);
 
+/* io */
+K_FN(read_file);
+K_FN(open_file);
+
 #endif

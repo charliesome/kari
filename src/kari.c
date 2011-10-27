@@ -36,6 +36,7 @@ char* kari_string_for_token_type_t(kari_token_type_t t)
         case KARI_TOK_FUNCTION: return "function";
         case KARI_TOK_ASSIGN_TO_IDENTIFIER: return "assign to identifier";
         case KARI_TOK_ARRAY: return "array";
+        case KARI_TOK_DICT: return "dict";
         default: return "(unknown type)";
     }
 }
@@ -191,6 +192,10 @@ char* kari_inspect(kari_value_t* value)
             s[s_len++] = '}';
             s[s_len] = 0;
             return s;
+        case KARI_DATA:
+            s = (char*)GC_MALLOC(64);
+            sprintf(s, "(data:%p)", (void*)(size_t)((kari_data_t*)value)->ptr);
+            return s;
         default:
             return "(unknown type)";
     }
@@ -253,6 +258,22 @@ kari_array_t* kari_create_array()
     arr->base.type = KARI_ARRAY;
     arr->items = new_kari_vec();
     return arr;
+}
+
+static void kari_gc_finalize_callback(kari_data_t* data, void* cd)
+{
+    data->finalizer(data->ptr);
+}
+
+kari_data_t* kari_create_data(void* ptr, size_t tag, void(*finalizer)(void*))
+{
+    kari_data_t* data = (kari_data_t*)GC_MALLOC(sizeof(kari_data_t));
+    data->base.type = KARI_DATA;
+    data->ptr = ptr;
+    data->tag = tag;
+    data->finalizer = finalizer;
+    GC_register_finalizer(data, (void(*)(void*,void*))kari_gc_finalize_callback, 0, 0, 0);
+    return data;
 }
 
 size_t kari_utf8_strlen(char* s)

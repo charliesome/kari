@@ -10,6 +10,7 @@ clean:
 	rm -f src/*.o
 	rm -f src/lib/*.o
 	rm -f repl/*.o
+	rm -f repl/*.inc
 	rm -f libkari.a
 	rm -f ikari
 
@@ -19,11 +20,11 @@ repl: libkari.a repl/.startup.kari.inc repl/ikari.o
 repl/%.o: repl/%.c inc/*.h
 
 repl/.startup.kari.inc: repl/startup.kari
-	perl -e 'shift; while(<>) { s/"/\\"/g; print "\""; print; print "\"\n"; }' < repl/startup.kari > repl/.startup.kari.inc
+	perl -e 'shift; while(<>) { chomp; s/"/\\"/g; print "\""; print; print "\"\n"; }' < repl/startup.kari > repl/.startup.kari.inc
 
 libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o src/st.o \
 						src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
-						src/lib/string.o src/lib/array.o src/lib/dict.o
+						src/lib/string.o src/lib/array.o src/lib/dict.o src/lib/io.o
 	ar r libkari.a src/*.o src/lib/*.o deps/gc/*.o 2> /dev/null
 
 src/%.o: src/%.c inc/%.h

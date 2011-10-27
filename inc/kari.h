@@ -87,7 +87,8 @@ typedef enum kari_value_type {
     KARI_TRUE = 0x40,
     KARI_FALSE = 0x41,
     KARI_ARRAY = 0x05,
-    KARI_DICT = 0x06
+    KARI_DICT = 0x06,
+	KARI_DATA = 0x07
 } kari_value_type_t;
 #define K_IS_CALLABLE(t) (t & 0x80)
 #define K_IS_BOOLEAN(t) (t & 0x40)
@@ -116,6 +117,17 @@ typedef struct kari_dict_val {
     kari_value_t base;
     kari_dict_t* items;
 } kari_dict_val_t;
+
+enum kari_data_tags {
+	KARI_TAG_FILE
+};
+
+typedef struct kari_data {
+	kari_value_t base;
+	size_t tag;
+	void* ptr;
+	void(*finalizer)(void* ptr);
+} kari_data_t;
 
 typedef kari_value_t*(*kari_nfn_t)(kari_context_t*,void*,kari_value_t*,char**);
 typedef struct kari_native_function {
@@ -155,6 +167,7 @@ char* kari_str(kari_value_t* value);
 kari_number_t* kari_create_number(double number);
 kari_string_t* kari_create_string(char* str);
 kari_array_t* kari_create_array();
+kari_data_t* kari_create_data(void* ptr, size_t tag, void(*finalizer)(void*));
 kari_native_function_t* kari_create_native_function(kari_context_t* context, kari_nfn_t fn, void* state);
 
 size_t kari_utf8_strlen(char* s);
