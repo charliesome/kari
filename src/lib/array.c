@@ -151,7 +151,7 @@ K_FN(_foldl_2)
     size_t i;
     kari_array_t* ary = (kari_array_t*)state;
     kari_value_t* acc = ary->items->count > 0 ? (kari_value_t*)ary->items->entries[0] : kari_nil();
-    kari_value_t* fun;
+    kari_value_t* fun = NULL;
     KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
     
     for(i = 1; i < ary->items->count; i++) {
