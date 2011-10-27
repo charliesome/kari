@@ -237,9 +237,10 @@ kari_native_function_t* kari_create_native_function(kari_context_t* context, kar
 
 kari_value_t* kari_var_get(kari_context_t* ctx, char* name)
 {
+    st_data_t val;
     while(ctx) {
-        if(kari_dict_exists(ctx->variables, name)) {
-            return (kari_value_t*)kari_dict_find_value(ctx->variables, name);
+        if(st_lookup(ctx->variables, (st_data_t)name, (st_data_t*)&val)) {
+            return (kari_value_t*)val;
         }
         ctx = ctx->parent;
     }

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <gc.h>
+#include "st.h"
 #include "dict.h"
 #include "vec.h"
 
@@ -12,7 +13,7 @@
 */
 typedef struct kari_context {
     struct kari_context* parent;
-    kari_dict_t* variables;
+    st_table* variables;
 } kari_context_t;
 
 /*
