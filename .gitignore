@@ -6,3 +6,4 @@ deps/gc/*
 *.a
 *.la
 ikari
+.*
