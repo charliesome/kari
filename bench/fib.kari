@@ -9,4 +9,4 @@
 	a
 ) => fib
 
-put fib 100000
+fib 100000
