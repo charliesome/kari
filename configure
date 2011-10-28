@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+
+sub compile_test {
+	($what, $src, $switches) = @_;
+	print "checking for $what... ";
+	if(system "echo '$src\nint main(){}' | cc -Werror -o /dev/null $switches -xc - 2>/dev/null") {
+		print "no\n";
+		0;
+	} else {
+		print "yes\n";
+		1;
+	}
+};
+
+
+# attempt to see if boehm is installed
+compile_test "-lgc", "", "-lgc" or die "\n*** libgc not found!\n";
+
+# attempt to find gc.h
+$inc_switch = "";
+unless(compile_test "gc.h", "#include <gc.h>") {
+	for $prefix ("/usr/include", "/usr/include/gc", "/usr/local/include", "/usr/local/include/gc", "/opt/local/include", "/opt/local/include/gc") {
+		if(compile_test "$prefix/gc.h", "#include <gc.h>", "-I$prefix") {
+			$inc_switch = "-I$prefix";
+			last;
+		}
+	}
+	die "\n*** gc.h not found in any of the paths searched!\n" unless $inc_switch;
+}
+
+open(MAKEFILE, ">Makefile");
+
+print MAKEFILE "CFLAGS=-ansi -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Werror -Wno-unused-parameter -iquote inc/ $inc_switch\n";
+print MAKEFILE <<'EOF';
+all: libkari.a repl
+
+release:
+	@make clean
+	make all CFLAGS="-ansi -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -iquote inc/" 
+
+clean:
+	rm -f src/*.o
+	rm -f src/lib/*.o
+	rm -f repl/*.o
+	rm -f repl/.*.inc
+	rm -f libkari.a
+	rm -f ikari
+
+repl: libkari.a repl/.startup.kari.inc repl/ikari.o
+	$(CC) $(CFLAGS) -lm -lgc -o ikari src/*.o src/*/*.o repl/*.o
+
+repl/%.o: repl/%.c inc/*.h
+
+repl/.startup.kari.inc: repl/startup.kari
+	perl -e 'shift; while(<>) { chomp; s/"/\\"/g; print "\""; print; print "\"\n"; }' < repl/startup.kari > repl/.startup.kari.inc
+
+libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o src/st.o \
+			src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
+			src/lib/string.o src/lib/array.o src/lib/dict.o src/lib/io.o
+	ar r libkari.a src/*.o src/lib/*.o 2> /dev/null
+
+src/%.o: src/%.c inc/%.h
+EOF
+
+close MAKEFILE;

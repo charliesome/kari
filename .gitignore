@@ -1,3 +1,4 @@
+Makefile
 .deps/*
 deps/gc/.libs
 deps/gc/*
