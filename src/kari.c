@@ -4,6 +4,22 @@
 #include "kari.h"
 #include "kari_stdlib.h"
 
+static st_table* uniqids = NULL;
+static size_t uniqid_ai = 1;
+
+size_t kari_identifier_uniqid(char* identifier)
+{
+    size_t tmp_uniqid = 0;
+    if(uniqids == NULL) {
+        uniqids = st_init_strtable();
+    }
+    if(!st_lookup(uniqids, (st_data_t)identifier, (st_data_t*)&tmp_uniqid)) {
+        tmp_uniqid = uniqid_ai++;
+        st_insert(uniqids, (st_data_t)identifier, tmp_uniqid);
+    }    
+    return tmp_uniqid;
+}
+
 static kari_value_type_t k_nil = KARI_NIL;
 kari_value_t* kari_nil()
 {

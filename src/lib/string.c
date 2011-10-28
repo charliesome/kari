@@ -113,11 +113,12 @@ K_FN(split)
 /* concat */
 K_FN(_concat_2)
 {
+    char* str = kari_str(argument);
     size_t a_sz = strlen((char*)state);
-    size_t b_sz = strlen(((kari_string_t*)argument)->str);
+    size_t b_sz = strlen(str);
     char* buff = (char*)GC_MALLOC(a_sz + b_sz + 1);
     memcpy(buff, (char*)state, a_sz);
-    memcpy(buff + a_sz, ((kari_string_t*)argument)->str, b_sz);
+    memcpy(buff + a_sz, str, b_sz);
     return (kari_value_t*)kari_create_string(buff);
 }
 

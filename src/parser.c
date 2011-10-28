@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "vec.h"
 #include "kari.h"
+#include "st.h"
 
 static bool is_identifier_char(char c, bool first) {
     return isalpha(c) || (!first && isdigit(c)) || (first && c == '$') || c == '_';
@@ -62,6 +63,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             ((kari_identifier_token_t*)tmp_tok)->is_reference = is_reference;
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
             ((kari_identifier_token_t*)tmp_tok)->len = i - identifier_start;
+            ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(tmp_s);
+            
             kari_vec_push(tokens, tmp_tok);
             
             is_reference = false;
@@ -264,6 +267,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             tmp_tok->type = KARI_TOK_IDENTIFIER;
             ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
             ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '*' ? "mul" : "div");
+            ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(source[i] == '*' ? "mul" : "div");
             ((kari_identifier_token_t*)tmp_tok)->len = 3;
             kari_vec_push(tokens, tmp_tok);
             ++i;
@@ -295,6 +299,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                     tmp_tok->type = KARI_TOK_IDENTIFIER;
                     ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
                     ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '+' ? "add" : "sub");
+                    ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(source[i] == '+' ? "add" : "sub");
                     ((kari_identifier_token_t*)tmp_tok)->len = 3;
                     kari_vec_push(tokens, tmp_tok);
                     ++i;

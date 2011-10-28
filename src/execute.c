@@ -22,7 +22,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 case KARI_TOK_IDENTIFIER:
                     lookup_ctx = ctx;
                     while(lookup_ctx != NULL) {
-                        if(st_lookup(lookup_ctx->variables, (st_data_t)((kari_identifier_token_t*)tokens[i])->str, &tmp_st)) {
+                        if(st_lookup(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, &tmp_st)) {
                             value = (kari_value_t*)tmp_st;
                             if(K_IS_CALLABLE(value->type) && ((kari_identifier_token_t*)tokens[i])->is_reference == false) {
                                 kari_vec_push(function_stack, value);
@@ -44,7 +44,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     }
                     lookup_ctx = ctx;
                     while(lookup_ctx != NULL) {
-                        if(st_lookup(lookup_ctx->variables, (st_data_t)((kari_identifier_token_t*)tokens[i])->str, &tmp_st)) {
+                        if(st_lookup(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, &tmp_st)) {
                             break;
                         }
                         lookup_ctx = lookup_ctx->parent;
@@ -52,7 +52,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     if(lookup_ctx == NULL) {
                         lookup_ctx = ctx;
                     }
-                    st_insert(lookup_ctx->variables, (st_data_t)((kari_identifier_token_t*)tokens[i])->str, (st_data_t)value);
+                    st_insert(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, (st_data_t)value);
                     break;
                 
                 case KARI_TOK_MEMBER_ACCESS_STR:

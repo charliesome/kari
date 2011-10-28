@@ -41,6 +41,7 @@ typedef struct kari_identifier_token {
     bool is_reference;
     char* str;
     size_t len;
+	size_t uniqid;
 } kari_identifier_token_t;
 
 typedef struct kari_number_token {
@@ -163,6 +164,7 @@ char* kari_string_for_value_type_t(kari_value_type_t t);
 char* kari_string_for_token_type_t(kari_token_type_t t);
 char* kari_inspect(kari_value_t* value);
 char* kari_str(kari_value_t* value);
+size_t kari_identifier_uniqid(char* identifier);
 
 kari_number_t* kari_create_number(double number);
 kari_string_t* kari_create_string(char* str);

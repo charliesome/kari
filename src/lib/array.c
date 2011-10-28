@@ -151,11 +151,10 @@ K_FN(_foldl_2)
     size_t i;
     kari_array_t* ary = (kari_array_t*)state;
     kari_value_t* acc = ary->items->count > 0 ? (kari_value_t*)ary->items->entries[0] : kari_nil();
-    kari_value_t* fun = NULL;
+    kari_value_t* fun = (kari_value_t*)argument;
     KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
     
     for(i = 1; i < ary->items->count; i++) {
-        printf("fun = %s\nacc = %s\ncur = %s\n\n", kari_str(fun), kari_str(acc), kari_str((kari_value_t*)ary->items->entries[i]));
         fun = kari_call(argument, acc, err);
         if(fun == NULL) {
             return NULL;
