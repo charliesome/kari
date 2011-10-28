@@ -36,8 +36,9 @@ all: libkari.a repl
 
 release:
 	@make clean
-	make all CFLAGS="-ansi -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -iquote inc/" 
-
+EOF
+print MAKEFILE "	make all CFLAGS='-ansi -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -iquote inc/ $inc_switch' "
+print MAKEFILE <<'EOF';
 clean:
 	rm -f src/*.o
 	rm -f src/lib/*.o
