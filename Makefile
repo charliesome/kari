@@ -1,4 +1,4 @@
-CFLAGS=-ansi -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Wc++-compat -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
+CFLAGS=-ansi -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Ideps/gc/include/ -iquote inc/
 
 all: deps/gc/libgc.la libkari.a repl
 
