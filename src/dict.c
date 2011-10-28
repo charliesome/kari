@@ -5,7 +5,7 @@
 #include "dict.h"
 #include "string.h"
 
-static const unsigned int hash_seed;
+static const unsigned int hash_seed = 0xdeadbeef;
 
 static uint32_t murmur(char* key, size_t len)
 {    
