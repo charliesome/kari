@@ -11,7 +11,7 @@ K_FN(len)
 {
     /* overloaded here for array as well */
     
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_STRING:
             return (kari_value_t*)kari_create_number(((kari_string_t*)argument)->len);
         case KARI_ARRAY:
@@ -26,8 +26,8 @@ K_FN(chr)
 {   
     char* str = (char*)GC_MALLOC(5);
     size_t codepoint;
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    codepoint = (size_t)((kari_number_t*)argument)->number;
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    codepoint = (size_t)K_GET_NUMBER(argument);
     
     if(codepoint < 0x7f) {
         str[0] = (char)codepoint;
@@ -51,7 +51,7 @@ K_FN(chr)
 K_FN(ord)
 {
     kari_string_t* str;
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     str = (kari_string_t*)argument;
     if(str->len != 1) {
         *err = "String must have only one character";
@@ -83,7 +83,7 @@ K_FN(_split_2)
     kari_string_t* delim = (kari_string_t*)argument;
     size_t delim_bytes;
     char *strptr, *tmp, *delimptr, *endptr;
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     
     delim_bytes = strlen(delim->str);
     
@@ -106,7 +106,7 @@ K_FN(_split_2)
 
 K_FN(split)
 {    
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_split_2), argument);
 }
 
@@ -132,7 +132,7 @@ K_FN(_index_of_2)
 {
     char *idx, *ptr;
     size_t cp_offset = 0;
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     idx = strstr(((kari_string_t*)state)->str, ((kari_string_t*)argument)->str);
     if(idx) {
         ptr = ((kari_string_t*)state)->str;
@@ -149,7 +149,7 @@ K_FN(_index_of_2)
 
 K_FN(index_of)
 {
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_index_of_2), argument);
 }
 
@@ -161,7 +161,7 @@ K_FN(_interpolate_2)
     char* buff = (char*)GC_MALLOC(capacity);
     char* tmp;
     kari_array_t* ary = (kari_array_t*)argument;
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     
     while(*ptr) {
         if(*ptr == '%' && ptr[1] != 0 && ptr[1] >= '0' && ptr[1] <= '9') {
@@ -193,6 +193,6 @@ K_FN(_interpolate_2)
 
 K_FN(interpolate)
 {
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_interpolate_2), argument);
 }

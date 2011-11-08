@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <gc.h>
 #include "kari.h"
 #include "vec.h"
@@ -16,6 +17,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
     size_t i = 0, tmp_i = 0;
     while(i < token_count || function_stack->count > 0) {
         if(i < token_count) {
+            do_next_token:
             switch(tokens[i]->type) {
                 
                 
@@ -24,7 +26,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     while(lookup_ctx != NULL) {
                         if(st_lookup(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, &tmp_st)) {
                             value = (kari_value_t*)tmp_st;
-                            if(K_IS_CALLABLE(value->type) && ((kari_identifier_token_t*)tokens[i])->is_reference == false) {
+                            if(K_IS_CALLABLE(K_TYPE_OF(value)) && ((kari_identifier_token_t*)tokens[i])->is_reference == false) {
                                 kari_vec_push(function_stack, value);
                                 value = NULL;
                             }
@@ -32,10 +34,15 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         }
                         lookup_ctx = lookup_ctx->parent;
                     }
-                    *err = (char*)GC_MALLOC(25 + ((kari_identifier_token_t*)tokens[i])->len);
-                    sprintf(*err, "Undefined identifier '%s'", ((kari_identifier_token_t*)tokens[i])->str);
+                    *err = (char*)GC_MALLOC(64 + ((kari_identifier_token_t*)tokens[i])->len + strlen(tokens[i]->file));
+                    sprintf(*err, "Undefined identifier '%s' at %s:%lu", ((kari_identifier_token_t*)tokens[i])->str, tokens[i]->file, tokens[i]->line);
                     return NULL;
-                    found_value: break;
+                    found_value:
+                    if(i + 1 < token_count && tokens[i + 1]->type == KARI_TOK_MEMBER_ACCESS_STR) {
+                        ++i;
+                        goto do_next_token;
+                    }
+                    break;
                     
                     
                 case KARI_TOK_ASSIGN_TO_IDENTIFIER:    
@@ -56,7 +63,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     break;
                 
                 case KARI_TOK_MEMBER_ACCESS_STR:
-                    if(value == NULL || value->type != KARI_DICT) {
+                    if(value == NULL || K_TYPE_OF(value) != KARI_DICT) {
                         *err = "Attempted to access string key from a non-dictionary value";
                         return NULL;
                     }
@@ -64,15 +71,16 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     if(value == NULL) {
                         value = kari_nil();
                     }
-                    if(K_IS_CALLABLE(value->type)) {
+                    if(K_IS_CALLABLE(K_TYPE_OF(value))) {
                         kari_vec_push(function_stack, value);
                         value = NULL;
                     }
                     break;
                     
                 case KARI_TOK_MEMBER_ACCESS_INT:
-                    if(value == NULL || value->type != KARI_ARRAY) {
-                        *err = "Attempted to access index from a non-array value";
+                    if(value == NULL || K_TYPE_OF(value) != KARI_ARRAY) {
+                        *err = (char*)GC_MALLOC(128 + strlen(tokens[i]->file));
+                        sprintf(*err, "Attempted to access index from a non-array value at %s:%lu", tokens[i]->file, tokens[i]->line);
                         return NULL;
                     }
                     if(((kari_number_token_t*)tokens[i])->number < 0) {
@@ -85,7 +93,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     } else {
                         value = (kari_value_t*)((kari_array_t*)value)->items->entries[tmp_i];
                     }
-                    if(K_IS_CALLABLE(value->type)) {
+                    if(K_IS_CALLABLE(K_TYPE_OF(value))) {
                         kari_vec_push(function_stack, value);
                         value = NULL;
                     }
@@ -104,9 +112,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 
                     
                 case KARI_TOK_NUMBER:
-                    value = (kari_value_t*)GC_MALLOC(sizeof(kari_number_t));
-                    value->type = KARI_NUMBER;
-                    ((kari_number_t*)value)->number = ((kari_number_token_t*)tokens[i])->number;
+                    value = kari_create_number(((kari_number_token_t*)tokens[i])->number);
                     break;
                     
                     
@@ -161,11 +167,19 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
             if(value == NULL) {
                 break;
             }
-            value = kari_call((kari_value_t*)kari_vec_pop(function_stack), value, err);
+            tmp_val = (kari_value_t*)kari_vec_pop(function_stack);
+            value = tmp_val->type == KARI_NATIVE_FUNCTION
+                ? ((kari_native_function_t*)tmp_val)->call(((kari_native_function_t*)tmp_val)->context, ((kari_native_function_t*)tmp_val)->state, value, err)
+                : kari_call(tmp_val, value, err);
             if(*err) {
                 return NULL;
             }
-            if(K_IS_CALLABLE(value->type)) {
+            if(value == NULL) {
+                /* BUG! */
+                *err = "BUG: kari_call returned null pointer without setting error string";
+                return NULL;
+            }
+            if(K_IS_CALLABLE(K_TYPE_OF(value))) {
                 kari_vec_push(function_stack, value);
                 value = NULL;
             }

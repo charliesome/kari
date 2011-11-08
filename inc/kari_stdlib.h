@@ -34,7 +34,10 @@ K_FN(quit);
 K_FN(str);
 K_FN(put);
 K_FN(try);
+K_FN(raise);
 K_FN(require);
+K_FN(env);
+K_FN(set_env);
 
 /* control flow */
 K_FN(if);

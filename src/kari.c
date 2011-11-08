@@ -77,7 +77,7 @@ char* kari_inspect(kari_value_t* value)
     size_t s_len, s_cap, i, tmp_size;
     char *s, *tmp_s;
     
-    switch(value->type) {
+    switch(K_TYPE_OF(value)) {
         case KARI_NIL:
             return "(nil)";
         case KARI_STRING:
@@ -103,7 +103,7 @@ char* kari_inspect(kari_value_t* value)
             return s;
         case KARI_NUMBER:
             s = (char*)GC_MALLOC(32);
-            sprintf(s, "%f", ((kari_number_t*)value)->number);
+            sprintf(s, "%f", K_GET_NUMBER(value));
             for(i = strlen(s) - 1; s[i] == '0' || s[i] == '.'; i--) {
                 if(s[i] == '.') {
                     s[i] = 0;
@@ -140,9 +140,9 @@ char* kari_inspect(kari_value_t* value)
                     s[s_len++] = ',';
                     s[s_len++] = ' ';
                 }
-                if(((kari_value_t*)((kari_array_t*)value)->items->entries[i])->type == KARI_ARRAY) {
+                if(K_TYPE_OF((kari_value_t*)((kari_array_t*)value)->items->entries[i]) == KARI_ARRAY) {
                     tmp_s = "(array)";
-                } else if(((kari_value_t*)((kari_array_t*)value)->items->entries[i])->type == KARI_ARRAY) {
+                } else if(K_TYPE_OF((kari_value_t*)((kari_array_t*)value)->items->entries[i]) == KARI_ARRAY) {
                     tmp_s = "(dict)";
                 } else {
                     tmp_s = kari_inspect((kari_value_t*)((kari_array_t*)value)->items->entries[i]);
@@ -186,11 +186,11 @@ char* kari_inspect(kari_value_t* value)
                 s_len += tmp_size;
                 s[s_len++] = ':';
                 s[s_len++] = ' ';
-                if(((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
-                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]))->type == KARI_ARRAY) {
+                if(K_TYPE_OF((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i])) == KARI_ARRAY) {
                     tmp_s = "(array)";
-                } else if(((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
-                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i]))->type == KARI_DICT) {
+                } else if(K_TYPE_OF((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
+                    (char*)((kari_dict_val_t*)value)->items->keys->entries[i])) == KARI_DICT) {
                     tmp_s = "(dict)";
                 } else {
                     tmp_s = kari_inspect((kari_value_t*)kari_dict_find_value(((kari_dict_val_t*)value)->items,
@@ -219,7 +219,7 @@ char* kari_inspect(kari_value_t* value)
 
 char* kari_str(kari_value_t* value)
 {
-    switch(value->type) {
+    switch(K_TYPE_OF(value)) {
         case KARI_NIL:
             return "";
         case KARI_STRING:
@@ -227,14 +227,6 @@ char* kari_str(kari_value_t* value)
         default:
             return kari_inspect(value);
     }
-}
-
-kari_number_t* kari_create_number(double number)
-{
-    kari_number_t* n = (kari_number_t*)GC_MALLOC(sizeof(kari_number_t));
-    n->base.type = KARI_NUMBER;
-    n->number = number;
-    return n;
 }
 
 kari_string_t* kari_create_string(char* str)
@@ -260,7 +252,7 @@ kari_value_t* kari_var_get(kari_context_t* ctx, char* name)
 {
     st_data_t val;
     while(ctx) {
-        if(st_lookup(ctx->variables, (st_data_t)name, (st_data_t*)&val)) {
+        if(st_lookup(ctx->variables, (st_data_t)kari_identifier_uniqid(name), (st_data_t*)&val)) {
             return (kari_value_t*)val;
         }
         ctx = ctx->parent;

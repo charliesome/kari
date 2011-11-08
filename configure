@@ -30,14 +30,14 @@ unless(compile_test "gc.h", "#include <gc.h>") {
 
 open(MAKEFILE, ">Makefile");
 
-print MAKEFILE "CFLAGS=-ansi -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Werror -Wno-unused-parameter -iquote inc/ $inc_switch\n";
+print MAKEFILE "CFLAGS=-std=c99 -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch\n";
 print MAKEFILE <<'EOF';
 all: libkari.a repl
 
 release:
 	@make clean
 EOF
-print MAKEFILE "	make all CFLAGS='-ansi -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -iquote inc/ $inc_switch' ";
+print MAKEFILE "	make all CFLAGS='-std=c99 -fomit-frame-pointer -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch' \n";
 print MAKEFILE <<'EOF';
 clean:
 	rm -f src/*.o
@@ -46,6 +46,7 @@ clean:
 	rm -f repl/.*.inc
 	rm -f libkari.a
 	rm -f ikari
+	find . | grep gmon.out | xargs rm -f
 
 repl: libkari.a repl/.startup.kari.inc repl/ikari.o
 	$(CC) $(CFLAGS) -lm -lgc -o ikari src/*.o src/*/*.o repl/*.o

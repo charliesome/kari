@@ -11,12 +11,12 @@ static bool is_identifier_char(char c, bool first) {
     return isalpha(c) || (!first && isdigit(c)) || (first && c == '$') || c == '_';
 }
 
-size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
+size_t kari_parse(char* filename, char* source, kari_token_t*** tokens_out, char** err)
 {
     kari_vec_t* tokens_stack = new_kari_vec();
     kari_vec_t* tokens = new_kari_vec();
     size_t source_len = strlen(source);
-    size_t i = 0, identifier_start, cap, len;
+    size_t i = 0, identifier_start, cap, len, line = 1;
     kari_token_t* tmp_tok;
     kari_vec_t* tmp_vec;
     kari_array_token_t* tmp_ary;
@@ -31,6 +31,15 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
     kari_vec_push(tokens_stack, tokens);
     
     while(i < source_len) {
+        if(source[i] == '#') {
+            while(i < source_len && source[i] != '\n') {
+                ++i;
+            }
+            continue;
+        }
+        if(source[i] == '\n') {
+            line++;
+        }
         if(isspace(source[i])) {
             i++;
             continue;
@@ -64,6 +73,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             ((kari_identifier_token_t*)tmp_tok)->str = tmp_s;
             ((kari_identifier_token_t*)tmp_tok)->len = i - identifier_start;
             ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(tmp_s);
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             
             kari_vec_push(tokens, tmp_tok);
             
@@ -97,6 +108,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         if(source[i] == '(') {
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_function_token_t));
             tmp_tok->type = KARI_TOK_FUNCTION;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             ((kari_function_token_t*)tmp_tok)->argument = NULL;
             kari_vec_push(tokens, tmp_tok);
             tokens = new_kari_vec();
@@ -124,6 +137,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         if(source[i] == '[') {
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_array_token_t));
             tmp_tok->type = KARI_TOK_ARRAY;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             kari_vec_push(tokens, tmp_tok);
             
             ((kari_array_token_t*)tmp_tok)->items = new_kari_vec();
@@ -155,6 +170,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         if(source[i] == '{') {
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_dict_token_t));
             tmp_tok->type = KARI_TOK_DICT;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             kari_vec_push(tokens, tmp_tok);
             
             ((kari_dict_token_t*)tmp_tok)->items = new_kari_vec();
@@ -178,7 +195,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                         return 0;
                     }
                     tmp_tok = (kari_token_t*)kari_vec_pop(tokens);
-                    if(tmp_tok->type != KARI_TOK_IDENTIFIER || ((kari_identifier_token_t*)tmp_tok)->is_reference == true) {
+                    if(tmp_tok->type != KARI_TOK_STRING && (tmp_tok->type != KARI_TOK_IDENTIFIER || ((kari_identifier_token_t*)tmp_tok)->is_reference == true)) {
                         *err = "':' must follow dict key";
                         return 0;
                     }
@@ -186,7 +203,7 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                         *err = "Unexpected ':'";
                         return 0;
                     }
-                    tmp_dent->identifier = ((kari_identifier_token_t*)tmp_tok)->str;
+                    tmp_dent->identifier = tmp_tok->type != KARI_TOK_STRING ? ((kari_identifier_token_t*)tmp_tok)->str : ((kari_string_token_t*)tmp_tok)->str;
                     ++i;
                     continue;
                 }
@@ -269,6 +286,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '*' ? "mul" : "div");
             ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(source[i] == '*' ? "mul" : "div");
             ((kari_identifier_token_t*)tmp_tok)->len = 3;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             kari_vec_push(tokens, tmp_tok);
             ++i;
             continue;
@@ -297,6 +316,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
                     /* + and - are legal shorthand characters for add and sub */
                     tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_identifier_token_t));
                     tmp_tok->type = KARI_TOK_IDENTIFIER;
+                    tmp_tok->line = line;
+                    tmp_tok->file = filename;
                     ((kari_identifier_token_t*)tmp_tok)->is_reference = false;
                     ((kari_identifier_token_t*)tmp_tok)->str = (source[i] == '+' ? "add" : "sub");
                     ((kari_identifier_token_t*)tmp_tok)->uniqid = kari_identifier_uniqid(source[i] == '+' ? "add" : "sub");
@@ -312,6 +333,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_number_token_t));
             tmp_tok->type = is_member_access ? KARI_TOK_MEMBER_ACCESS_INT : KARI_TOK_NUMBER;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             ((kari_number_token_t*)tmp_tok)->number = d;
             kari_vec_push(tokens, tmp_tok);
             
@@ -359,6 +382,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
             
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_string_token_t));
             tmp_tok->type = KARI_TOK_STRING;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             ((kari_string_token_t*)tmp_tok)->str = tmp_s;
             ((kari_string_token_t*)tmp_tok)->len = kari_utf8_strlen(tmp_s);
             kari_vec_push(tokens, tmp_tok);
@@ -369,6 +394,8 @@ size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err)
         if(source[i] == '!') {
             tmp_tok = (kari_token_t*)GC_MALLOC(sizeof(kari_token_t));
             tmp_tok->type = KARI_TOK_NIL;
+            tmp_tok->line = line;
+            tmp_tok->file = filename;
             kari_vec_push(tokens, tmp_tok);
             i++;
             continue;

@@ -9,136 +9,136 @@
 /* add */
 K_FN(_add_2)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(((kari_number_t*)argument)->number + ((kari_number_t*)state)->number);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) + K_GET_NUMBER(state));
 }
 K_FN(add)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_add_2), argument);
 }
 
 /* sub */
 K_FN(_sub_2)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(((kari_number_t*)state)->number - ((kari_number_t*)argument)->number);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) - K_GET_NUMBER(state));
 }
 K_FN(sub)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_sub_2), argument);
 }
 
 /* mul */
 K_FN(_mul_2)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(((kari_number_t*)argument)->number * ((kari_number_t*)state)->number);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) * K_GET_NUMBER(state));
 }
 K_FN(mul)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_mul_2), argument);
 }
 
 /* div */
 K_FN(_div_2)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(((kari_number_t*)state)->number / ((kari_number_t*)argument)->number);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) / K_GET_NUMBER(state));
 }
 K_FN(div)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_div_2), argument);
 }
 
 /* mod */
 K_FN(_mod_2)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(fmod(((kari_number_t*)state)->number, ((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(fmod(K_GET_NUMBER(state), K_GET_NUMBER(argument)));
 }
 K_FN(mod)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_mod_2), argument);
 }
 
 /* odd */
 K_FN(odd)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return kari_boolean(fabs((fmod(((kari_number_t*)argument)->number, 2)) - 1) < DBL_EPSILON);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return kari_boolean(fabs((fmod(K_GET_NUMBER(argument), 2)) - 1) < DBL_EPSILON);
 }
 
 /* even */
 K_FN(even)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return kari_boolean(fabs(fmod(((kari_number_t*)argument)->number, 2)) < DBL_EPSILON);
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return kari_boolean(fabs(fmod(K_GET_NUMBER(argument), 2)) < DBL_EPSILON);
 }
 
 /* floor */
 K_FN(floor)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(floor(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(floor(K_GET_NUMBER(argument)));
 }
 
 /* ceil */
 K_FN(ceil)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(ceil(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(ceil(K_GET_NUMBER(argument)));
 }
 
 /* sin */
 K_FN(sin)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(sin(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(sin(K_GET_NUMBER(argument)));
 }
 
 /* cos */
 K_FN(cos)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(cos(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(cos(K_GET_NUMBER(argument)));
 }
 
 /* tan */
 K_FN(tan)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(tan(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(tan(K_GET_NUMBER(argument)));
 }
 
 /* asin */
 K_FN(asin)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(asin(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(asin(K_GET_NUMBER(argument)));
 }
 
 /* acos */
 K_FN(acos)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(acos(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(acos(K_GET_NUMBER(argument)));
 }
 
 /* atan */
 K_FN(atan)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(atan(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(atan(K_GET_NUMBER(argument)));
 }
 
 /* exp */
 K_FN(exp)
 {
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(exp(((kari_number_t*)argument)->number));
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    return (kari_value_t*)kari_create_number(exp(K_GET_NUMBER(argument)));
 }

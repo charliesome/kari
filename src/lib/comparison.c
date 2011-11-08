@@ -11,16 +11,16 @@
 K_FN(_eq_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(argument->type != oth->type) {
+    if(K_TYPE_OF(argument) != oth->type) {
         return kari_false();
     }
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_NIL:
         case KARI_TRUE:
         case KARI_FALSE:
             return kari_true();
         case KARI_NUMBER:
-            return kari_boolean(fabs(((kari_number_t*)argument)->number - ((kari_number_t*)oth)->number) < DBL_EPSILON);
+            return kari_boolean(fabs(K_GET_NUMBER(argument) - K_GET_NUMBER(oth)) < DBL_EPSILON);
         case KARI_STRING:
             if(((kari_string_t*)argument)->len != ((kari_string_t*)oth)->len) {
                 return kari_false();
@@ -51,12 +51,12 @@ K_FN(eq)
 K_FN(_lt_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(argument->type != oth->type) {
+    if(K_TYPE_OF(argument) != oth->type) {
         return kari_false();
     }
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_NUMBER:
-            return kari_boolean((((kari_number_t*)argument)->number - ((kari_number_t*)oth)->number) > DBL_EPSILON);
+            return kari_boolean((K_GET_NUMBER(argument) - K_GET_NUMBER(oth)) > DBL_EPSILON);
         default:
             return kari_false();
     }
@@ -71,12 +71,12 @@ K_FN(lt)
 K_FN(_lte_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(argument->type != oth->type) {
+    if(K_TYPE_OF(argument) != oth->type) {
         return kari_false();
     }
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_NUMBER:
-            return kari_boolean((((kari_number_t*)argument)->number - ((kari_number_t*)oth)->number) > -DBL_EPSILON);
+            return kari_boolean((K_GET_NUMBER(argument) - K_GET_NUMBER(oth)) > -DBL_EPSILON);
         default:
             return kari_false();
     }
@@ -91,12 +91,12 @@ K_FN(lte)
 K_FN(_gt_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(argument->type != oth->type) {
+    if(K_TYPE_OF(argument) != oth->type) {
         return kari_false();
     }
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_NUMBER:
-            return kari_boolean((((kari_number_t*)oth)->number - ((kari_number_t*)argument)->number) > DBL_EPSILON);
+            return kari_boolean((K_GET_NUMBER(oth) - K_GET_NUMBER(argument)) > DBL_EPSILON);
         default:
             return kari_false();
     }
@@ -112,12 +112,12 @@ K_FN(gt)
 K_FN(_gte_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(argument->type != oth->type) {
+    if(K_TYPE_OF(argument) != oth->type) {
         return kari_false();
     }
-    switch(argument->type) {
+    switch(K_TYPE_OF(argument)) {
         case KARI_NUMBER:
-            return kari_boolean((((kari_number_t*)oth)->number - ((kari_number_t*)argument)->number) > -DBL_EPSILON);
+            return kari_boolean((K_GET_NUMBER(oth) - K_GET_NUMBER(argument)) > -DBL_EPSILON);
         default:
             return kari_false();
     }

@@ -33,7 +33,7 @@ kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err)
     kari_token_t** tokens;
     size_t tokens_count;
     *err = NULL;
-    tokens_count = kari_parse(source, &tokens, err);
+    tokens_count = kari_parse("(eval)", source, &tokens, err);
     if(*err) {
         return NULL;
     }

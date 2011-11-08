@@ -9,7 +9,7 @@
 /* if */
 K_FN(_if_3)
 {
-    KASSERT(K_IS_CALLABLE(KARI_FUNCTION), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     if(((kari_value_t*)state)->type == KARI_FALSE) {
         return kari_call(argument, kari_nil(), err);
     } else {
@@ -20,7 +20,7 @@ K_FN(_if_3)
 }
 K_FN(_if_2)
 {
-    KASSERT(K_IS_CALLABLE(KARI_FUNCTION), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     /* we don't call the true function right now even if the bool was true,
        however if the bool was true, we'll replace the state passed to the
        next function with the true function for it to call. */
@@ -29,7 +29,7 @@ K_FN(_if_2)
 }
 K_FN(if)
 {
-    KASSERT(K_IS_BOOLEAN(argument->type), "Expected true/false value");
+    KASSERT(K_IS_BOOLEAN(K_TYPE_OF(argument)), "Expected true/false value");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_if_2), argument);
 }
 
@@ -37,7 +37,7 @@ K_FN(if)
 K_FN(_while_2)
 {
     kari_value_t* tmp;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     while(true) {
         tmp = kari_call((kari_value_t*)state, kari_nil(), err);
         if(tmp == NULL) {
@@ -56,7 +56,7 @@ K_FN(_while_2)
 
 K_FN(while)
 {
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_while_2), argument);
 }
 
@@ -70,7 +70,7 @@ K_FN(_for_3)
 {
     struct for_state* st = (struct for_state*)state;
     kari_value_t* tmp;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     for(; st->from <= st->to; st->from++) {
         tmp = kari_call(argument, (kari_value_t*)kari_create_number(st->from), err);
         if(tmp == NULL) {
@@ -83,16 +83,16 @@ K_FN(_for_3)
 K_FN(_for_2)
 {
     struct for_state* st = (struct for_state*)state;
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    st->to = (int)((kari_number_t*)argument)->number;
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    st->to = (int)K_GET_NUMBER(argument);
     return (kari_value_t*)kari_create_native_function(context, K_REF(_for_3), st);
 }
 
 K_FN(for)
 {
     struct for_state* st = (struct for_state*)GC_MALLOC(sizeof(struct for_state));
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    st->from = (int)((kari_number_t*)argument)->number;
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    st->from = (int)K_GET_NUMBER(argument);
     return (kari_value_t*)kari_create_native_function(context, K_REF(_for_2), st);
 }
 

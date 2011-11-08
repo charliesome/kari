@@ -12,10 +12,10 @@
 /* quit */
 K_FN(quit)
 {
-    if(argument->type != KARI_NUMBER) {
+    if(K_TYPE_OF(argument) != KARI_NUMBER) {
         exit(0);
     }
-    exit((int)((kari_number_t*)argument)->number);
+    exit((int)K_GET_NUMBER(argument));
 }
 
 /* inspect */
@@ -42,7 +42,7 @@ K_FN(try)
 {    
     char* e = NULL;
     kari_value_t* val = NULL;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     
     val = kari_call(argument, kari_nil(), &e);
     if(e) {
@@ -52,10 +52,18 @@ K_FN(try)
     }
 }
 
+K_FN(raise)
+{
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
+    *err = ((kari_string_t*)argument)->str;
+    return NULL;
+}
+
 /* require */
 K_FN(require)
 {
-    size_t i, arg_len, tmp, src_len, src_capacity;
+    size_t i, arg_len, tmp, src_len, src_capacity, token_count;
+    kari_token_t** tokens;
     struct stat stat_buf;
     kari_array_t* arr = (kari_array_t*)kari_var_get(context, "$inc");
     kari_vec_t* inc;
@@ -64,7 +72,7 @@ K_FN(require)
     char* arg;
     FILE* f;
     
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     arg = ((kari_string_t*)argument)->str;
     
     arg_len = strlen(arg);
@@ -96,7 +104,11 @@ K_FN(require)
                 src = (char*)GC_REALLOC(src, src_capacity);
             }
             
-            kari_eval(context, src, err);
+            token_count = kari_parse(buff, src, &tokens, err);
+            if(*err) {
+                return NULL;
+            }
+            kari_execute(context, tokens, token_count, err);
             if(*err) {
                 return NULL;
             }
@@ -109,5 +121,24 @@ K_FN(require)
     strcpy(buff + strlen("No such file '"), arg);
     strcpy(buff + strlen("No such file '") + arg_len, "'");
     *err = buff;
+    return NULL;
+}
+
+/* env */
+K_FN(env)
+{
+    char *value;
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
+    value = getenv(((kari_string_t*)argument)->str);
+    if(value != NULL) {
+        return (kari_value_t*)kari_create_string(value);
+    } else {
+        return kari_nil();
+    }
+}
+
+K_FN(set_env)
+{
+    *err = "not implemented (@TODO)";
     return NULL;
 }

@@ -14,7 +14,7 @@ K_FN(read_file)
     size_t buff_capacity = 1024;
     size_t buff_i = 0;
     char* buff = (char*)GC_MALLOC(buff_capacity);
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     f = fopen(((kari_string_t*)argument)->str, "r");
     if(f == NULL) {
         return kari_nil();
@@ -38,7 +38,7 @@ void finalize_file_handle(FILE* f)
 K_FN(_open_file_2)
 {
     FILE* f;
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     f = fopen((char*)state, ((kari_string_t*)argument)->str);
     if(f == NULL) {
         *err = strerror(errno);
@@ -49,6 +49,6 @@ K_FN(_open_file_2)
 
 K_FN(open_file)
 {
-    KASSERT(argument->type == KARI_STRING, "Expected string");
+    KASSERT(K_TYPE_OF(argument) == KARI_STRING, "Expected string");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_open_file_2), ((kari_string_t*)argument)->str);
 }

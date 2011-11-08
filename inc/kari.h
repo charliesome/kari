@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <gc.h>
 #include "st.h"
 #include "dict.h"
@@ -34,6 +36,8 @@ typedef enum kari_token_type {
 
 typedef struct kari_token {
     kari_token_type_t type;
+	char* file;
+	size_t line;
 } kari_token_t;
 
 typedef struct kari_identifier_token {
@@ -83,25 +87,31 @@ typedef enum kari_value_type {
     KARI_NIL = 0x00,
     KARI_NUMBER = 0x01,
     KARI_STRING = 0x02,
-    KARI_NATIVE_FUNCTION = 0x80,
-    KARI_FUNCTION = 0x81,
+    KARI_NATIVE_FUNCTION = 0x10,
+    KARI_FUNCTION = 0x11,
     KARI_TRUE = 0x40,
     KARI_FALSE = 0x41,
     KARI_ARRAY = 0x05,
     KARI_DICT = 0x06,
 	KARI_DATA = 0x07
 } kari_value_type_t;
-#define K_IS_CALLABLE(t) (t & 0x80)
+#define K_IS_CALLABLE(t) (t & 0x10)
 #define K_IS_BOOLEAN(t) (t & 0x40)
+#define K_TYPE_OF(vptr) (K_IS_NUMBER(vptr) ? KARI_NUMBER : ((kari_value_t*)(vptr))->type)
 
 typedef struct kari_value {
     kari_value_type_t type;
 } kari_value_t;
 
+static inline double K_GET_NUMBER(kari_value_t* vptr) { return *(double*)&vptr; }
+static inline bool K_IS_NUMBER(kari_value_t* vptr) { return *(uint64_t*)(&vptr) & 1; }
+
+/*
 typedef struct kari_number {
     kari_value_t base;
     double number;
 } kari_number_t;
+*/
 
 typedef struct kari_string {
     kari_value_t base;
@@ -156,7 +166,7 @@ kari_value_t* kari_boolean(bool boolean);
 kari_context_t* kari_create_std_context();
 void kari_load_stdlib(kari_context_t* context);
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err);
-size_t kari_parse(char* source, kari_token_t*** tokens_out, char** err);
+size_t kari_parse(char* filename, char* source, kari_token_t*** tokens_out, char** err);
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err);
 kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err);
 kari_value_t* kari_var_get(kari_context_t* ctx, char* name);
@@ -166,7 +176,10 @@ char* kari_inspect(kari_value_t* value);
 char* kari_str(kari_value_t* value);
 size_t kari_identifier_uniqid(char* identifier);
 
-kari_number_t* kari_create_number(double number);
+static inline kari_value_t* kari_create_number(double number)
+{
+    return (kari_value_t*)(*(uint64_t*)&number | 1);
+}
 kari_string_t* kari_create_string(char* str);
 kari_array_t* kari_create_array();
 kari_data_t* kari_create_data(void* ptr, size_t tag, void(*finalizer)(void*));

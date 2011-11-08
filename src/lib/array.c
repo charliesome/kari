@@ -15,14 +15,14 @@ K_FN(_push_2)
 }
 K_FN(push)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_push_2), argument);
 }
 
 /* pop */
 K_FN(pop)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     if(((kari_array_t*)argument)->items->count == 0) {
         return kari_nil();
     }
@@ -32,7 +32,7 @@ K_FN(pop)
 /* first */
 K_FN(first)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     if(((kari_array_t*)argument)->items->count == 0) {
         return kari_nil();
     }
@@ -42,7 +42,7 @@ K_FN(first)
 /* last */
 K_FN(last)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     if(((kari_array_t*)argument)->items->count == 0) {
         return kari_nil();
     }
@@ -54,14 +54,14 @@ K_FN(_ind_2)
 {
     size_t ind = 0;
     kari_array_t* ary = (kari_array_t*)state;
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    ind = (long)((kari_number_t*)argument)->number;
-    if(((kari_number_t*)argument)->number < 0) {
-        ind = ary->items->count + (long)((kari_number_t*)argument)->number;
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    ind = (long)K_GET_NUMBER(argument);
+    if(K_GET_NUMBER(argument) < 0) {
+        ind = ary->items->count + (long)K_GET_NUMBER(argument);
     } else {
-        ind = (size_t)((kari_number_t*)argument)->number;
+        ind = (size_t)K_GET_NUMBER(argument);
     }
-    if(ind > ary->items->count) {
+    if(ind >= ary->items->count) {
         return kari_nil();
     }
     return (kari_value_t*)ary->items->entries[ind];
@@ -69,7 +69,7 @@ K_FN(_ind_2)
 
 K_FN(ind)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_ind_2), argument);
 }
 
@@ -78,12 +78,12 @@ K_FN(_remove_2)
 {
     size_t ind = 0;
     kari_array_t* ary = (kari_array_t*)state;
-    KASSERT(argument->type == KARI_NUMBER, "Expected number");
-    ind = (long)((kari_number_t*)argument)->number;
-    if(((kari_number_t*)argument)->number < 0) {
-        ind = ary->items->count + (long)((kari_number_t*)argument)->number;
+    KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
+    ind = (long)K_GET_NUMBER(argument);
+    if(K_GET_NUMBER(argument) < 0) {
+        ind = ary->items->count + (long)K_GET_NUMBER(argument);
     } else {
-        ind = (size_t)((kari_number_t*)argument)->number;
+        ind = (size_t)K_GET_NUMBER(argument);
     }
     if(ind > ary->items->count) {
         return kari_false();
@@ -94,7 +94,7 @@ K_FN(_remove_2)
 
 K_FN(remove)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_ind_2), argument);
 }
 
@@ -103,7 +103,7 @@ K_FN(_each_2)
 {
     size_t i;
     kari_array_t* ary = (kari_array_t*)state;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     for(i = 0; i < ary->items->count; i++) {
         if(kari_call(argument, (kari_value_t*)ary->items->entries[i], err) == NULL) {
             return NULL;
@@ -113,7 +113,7 @@ K_FN(_each_2)
 }
 K_FN(each)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_each_2), argument);
 }
 
@@ -124,7 +124,7 @@ K_FN(_map_2)
     kari_array_t* ary = (kari_array_t*)state;
     kari_vec_t* new = new_kari_vec();
     kari_value_t* tmp;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     
     for(i = 0; i < ary->items->count; i++) {
         if((tmp = kari_call(argument, (kari_value_t*)ary->items->entries[i], err)) == NULL) {
@@ -141,7 +141,7 @@ K_FN(_map_2)
 
 K_FN(map)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_map_2), argument);
 }
 
@@ -152,7 +152,7 @@ K_FN(_foldl_2)
     kari_array_t* ary = (kari_array_t*)state;
     kari_value_t* acc = ary->items->count > 0 ? (kari_value_t*)ary->items->entries[0] : kari_nil();
     kari_value_t* fun = (kari_value_t*)argument;
-    KASSERT(K_IS_CALLABLE(argument->type), "Expected function");
+    KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
     
     for(i = 1; i < ary->items->count; i++) {
         fun = kari_call(argument, acc, err);
@@ -170,7 +170,7 @@ K_FN(_foldl_2)
 
 K_FN(foldl)
 {
-    KASSERT(argument->type == KARI_ARRAY, "Expected array");
+    KASSERT(K_TYPE_OF(argument) == KARI_ARRAY, "Expected array");
     return (kari_value_t*)kari_create_native_function(context, K_REF(_foldl_2), argument);
 }
 

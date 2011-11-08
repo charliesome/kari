@@ -36,9 +36,14 @@ int main(int argc, char** argv)
     kari_value_t* value;
     size_t tokens_count;
     bool execute_mode = false;
+    char* file = "(repl)";
     
     if(argc > 1 && strcmp(argv[1], "-x") == 0) {
         execute_mode = true;
+        if(argc > 2) {
+            file = argv[2];
+            freopen(argv[2], "r", stdin);
+        }
     }
     
     GC_INIT();
@@ -53,7 +58,7 @@ int main(int argc, char** argv)
     }
     
     if(execute_mode) {
-        tokens_count = kari_parse(readstr(false), &tokens, &err);
+        tokens_count = kari_parse(file, readstr(false), &tokens, &err);
         if(err) {
             fprintf(stderr, "Parse error: %s\n", err);
             exit(1);
@@ -73,7 +78,7 @@ int main(int argc, char** argv)
             if(src[0] == 0) {
                 continue;
             }
-            tokens_count = kari_parse(src, &tokens, &err);
+            tokens_count = kari_parse(file, src, &tokens, &err);
             if(err) {
                 printf("Parse error: %s\n", err);
                 continue;
