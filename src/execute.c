@@ -36,7 +36,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 
                 
                 case KARI_TOK_IDENTIFIER:
-                    lookup_ctx = ctx;
+                    lookup_ctx = ctx->variables->num_entries ? ctx : ctx->parent;
                     while(lookup_ctx != NULL) {
                         if(st_lookup(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, &tmp_st)) {
                             value = (kari_value_t*)tmp_st;
