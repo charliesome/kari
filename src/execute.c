@@ -5,9 +5,23 @@
 #include "kari.h"
 #include "vec.h"
 
+#define FNSTACK_PUSH(val) do { if(fn_stack_i + 1 >= fn_stack_capacity) { \
+        if(fn_stack == initial_fn_stack) { \
+            fn_stack = NULL; \
+        } \
+        fn_stack = (kari_value_t**)GC_REALLOC(fn_stack, sizeof(kari_value_t*) * (fn_stack_capacity *= 2)); \
+    } \
+    fn_stack[fn_stack_i++] = val; } while(0)
+#define FNSTACK_POP() fn_stack[--fn_stack_i]
+
 kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t token_count, char** err)
 {
-    kari_vec_t* function_stack = new_kari_vec();
+    //kari_vec_t* function_stack = new_kari_vec();
+    size_t fn_stack_i = 0;
+    size_t fn_stack_capacity = 4;
+    kari_value_t* initial_fn_stack[4];
+    kari_value_t** fn_stack = (kari_value_t**)&initial_fn_stack;
+    
     kari_value_t *value = NULL, *tmp_val;
     kari_context_t* lookup_ctx;
     kari_function_t* tmp_fun;
@@ -15,7 +29,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
     kari_vec_t* tmp_vec;
     st_data_t tmp_st;
     size_t i = 0, tmp_i = 0;
-    while(i < token_count || function_stack->count > 0) {
+    while(i < token_count || fn_stack_i > 0) {
         if(i < token_count) {
             do_next_token:
             switch(tokens[i]->type) {
@@ -27,7 +41,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         if(st_lookup(lookup_ctx->variables, ((kari_identifier_token_t*)tokens[i])->uniqid, &tmp_st)) {
                             value = (kari_value_t*)tmp_st;
                             if(K_IS_CALLABLE(K_TYPE_OF(value)) && ((kari_identifier_token_t*)tokens[i])->is_reference == false) {
-                                kari_vec_push(function_stack, value);
+                                FNSTACK_PUSH(value);
                                 value = NULL;
                             }
                             goto found_value;
@@ -47,7 +61,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                     
                 case KARI_TOK_ASSIGN_TO_IDENTIFIER:    
                     if(value == NULL) {
-                        value = (kari_value_t*)kari_vec_pop(function_stack);
+                        value = FNSTACK_POP();
                     }
                     lookup_ctx = ctx;
                     while(lookup_ctx != NULL) {
@@ -72,7 +86,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         value = kari_nil();
                     }
                     if(K_IS_CALLABLE(K_TYPE_OF(value))) {
-                        kari_vec_push(function_stack, value);
+                        FNSTACK_PUSH(value);
                         value = NULL;
                     }
                     break;
@@ -94,7 +108,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         value = (kari_value_t*)((kari_array_t*)value)->items->entries[tmp_i];
                     }
                     if(K_IS_CALLABLE(K_TYPE_OF(value))) {
-                        kari_vec_push(function_stack, value);
+                        FNSTACK_PUSH(value);
                         value = NULL;
                     }
                     break;
@@ -163,11 +177,11 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
             }
             i++;
         }
-        while(function_stack->count > 0) {
+        while(fn_stack_i > 0) {
             if(value == NULL) {
                 break;
             }
-            tmp_val = (kari_value_t*)kari_vec_pop(function_stack);
+            tmp_val = FNSTACK_POP();
             value = tmp_val->type == KARI_NATIVE_FUNCTION
                 ? ((kari_native_function_t*)tmp_val)->call(((kari_native_function_t*)tmp_val)->context, ((kari_native_function_t*)tmp_val)->state, value, err)
                 : kari_call(tmp_val, value, err);
@@ -180,13 +194,13 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 return NULL;
             }
             if(K_IS_CALLABLE(K_TYPE_OF(value))) {
-                kari_vec_push(function_stack, value);
+                FNSTACK_PUSH(value);
                 value = NULL;
             }
         }
         
         if(i >= token_count && value == NULL) {
-            value = (kari_value_t*)kari_vec_pop(function_stack);
+            value = FNSTACK_POP();
         }
     }    
     return value ? value : kari_nil();

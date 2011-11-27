@@ -69,11 +69,10 @@ struct for_state {
 K_FN(_for_3)
 {
     struct for_state* st = (struct for_state*)state;
-    kari_value_t* tmp;
+    int from = st->from, to = st->to + 1;
     KASSERT(K_IS_CALLABLE(K_TYPE_OF(argument)), "Expected function");
-    for(; st->from <= st->to; st->from++) {
-        tmp = kari_call(argument, (kari_value_t*)kari_create_number(st->from), err);
-        if(tmp == NULL) {
+    for(; from < to; from++) {
+        if(!kari_call(argument, (kari_value_t*)kari_create_number(from), err)) {
             return NULL;
         }
     }

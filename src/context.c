@@ -40,17 +40,30 @@ kari_value_t* kari_eval(kari_context_t* ctx, char* source, char** err)
     return kari_execute(ctx, tokens, tokens_count, err);
 }
 
+static st_table* cached_var_table;
 kari_value_t* kari_call(kari_value_t* function, kari_value_t* argument, char** err)
 {
     kari_context_t* ctx;
+    kari_value_t* retn;
     switch(function->type) {
         case KARI_FUNCTION:
             ctx = (kari_context_t*)GC_MALLOC(sizeof(kari_context_t));
-            ctx->variables = st_init_numtable();
+            if(!cached_var_table) {
+                cached_var_table = st_init_numtable();
+            }
+            ctx->variables = cached_var_table;
+            cached_var_table = NULL;
             ctx->parent = ((kari_function_t*)function)->parent;
             
-            st_insert(ctx->variables, kari_identifier_uniqid(((kari_function_t*)function)->argument), (st_data_t)argument);
-            return kari_execute(ctx, ((kari_function_t*)function)->tokens, ((kari_function_t*)function)->token_count, err);
+            if(((kari_function_t*)function)->argument[0]) {
+                st_insert(ctx->variables, kari_identifier_uniqid(((kari_function_t*)function)->argument), (st_data_t)argument);
+            }
+            retn = kari_execute(ctx, ((kari_function_t*)function)->tokens, ((kari_function_t*)function)->token_count, err);
+            cached_var_table = ctx->variables;
+            if(cached_var_table->num_entries) {
+                cached_var_table = NULL;
+            }
+            return retn;
         case KARI_NATIVE_FUNCTION:
             *err = NULL;
             return ((kari_native_function_t*)function)->call(((kari_native_function_t*)function)->context, ((kari_native_function_t*)function)->state, argument, err);
