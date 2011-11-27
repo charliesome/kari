@@ -58,10 +58,13 @@ repl/.startup.kari.inc: repl/startup.kari
 
 libkari.a:	src/context.o src/dict.o src/kari.o src/vec.o src/parser.o src/execute.o src/st.o \
 			src/lib/math.o src/lib/system.o src/lib/control.o src/lib/comparison.o \
-			src/lib/string.o src/lib/array.o src/lib/dict.o src/lib/io.o
+			src/lib/string.o src/lib/array.o src/lib/dict.o src/lib/io.o #src/lib/math_asm.o
 	ar r libkari.a src/*.o src/lib/*.o 2> /dev/null
 
 src/%.o: src/%.c inc/%.h
+
+#src/lib/math_asm.o: src/lib/math_asm.asm
+#	nasm -f macho64 -o src/lib/math_asm.o src/lib/math_asm.asm
 EOF
 
 close MAKEFILE;

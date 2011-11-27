@@ -1,6 +1,7 @@
 (n ->
 	1 => a
 	0 => b
+	nil => c # optimization!
 	for 1 n (
 		b => c
 		a => b

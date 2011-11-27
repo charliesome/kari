@@ -15,6 +15,6 @@ double fib(int n)
 
 int main()
 {
-    printf("%lf\n", fib(100));
+    fib(100000);
     return 0;
 }
