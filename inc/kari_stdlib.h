@@ -32,6 +32,7 @@ K_FN(exp);
 K_FN(inspect);
 K_FN(quit);
 K_FN(str);
+K_FN(num);
 K_FN(put);
 K_FN(try);
 K_FN(raise);

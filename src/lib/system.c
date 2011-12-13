@@ -30,6 +30,20 @@ K_FN(str)
     return (kari_value_t*)kari_create_string(kari_str(argument));
 }
 
+K_FN(num)
+{
+    kari_native_float_t d;
+    #ifdef K_SIZEOF_DOUBLE_EQ_POINTER
+        char* fmt = "%lf";
+    #else
+        #ifdef K_SIZEOF_FLOAT_EQ_POINTER
+            char* fmt = "%f";
+        #endif
+    #endif
+    sscanf(kari_str(argument), fmt, &d);
+    return kari_create_number(d);
+}
+
 /* put */
 K_FN(put)
 {

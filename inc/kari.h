@@ -10,6 +10,16 @@
 #include "dict.h"
 #include "vec.h"
 
+#ifdef K_SIZEOF_DOUBLE_EQ_POINTER
+    typedef double kari_native_float_t;
+#else
+    #ifdef K_SIZEOF_FLOAT_EQ_POINTER
+        typedef float kari_native_float_t;
+    #else
+        #error "architecture seems strange, please file a bug at http://github.com/charliesome/kari"
+    #endif
+#endif
+
 /*
 // CONTEXT
 */
@@ -50,7 +60,7 @@ typedef struct kari_identifier_token {
 
 typedef struct kari_number_token {
     kari_token_t base;
-    double number;
+    kari_native_float_t number;
 } kari_number_token_t;
 
 typedef struct kari_string_token {
@@ -103,8 +113,8 @@ typedef struct kari_value {
     kari_value_type_t type;
 } kari_value_t;
 
-static inline double K_GET_NUMBER(kari_value_t* vptr) { return *(double*)&vptr; }
-static inline bool K_IS_NUMBER(kari_value_t* vptr) { return *(uint64_t*)(&vptr) & 1; }
+static inline kari_native_float_t K_GET_NUMBER(kari_value_t* vptr) { kari_native_float_t* knf = (kari_native_float_t*)(void*)&vptr; return *knf; }
+static inline bool K_IS_NUMBER(kari_value_t* vptr) { size_t* s = (size_t*)(void*)(&vptr); return *s & 1; }
 
 /*
 typedef struct kari_number {
@@ -176,9 +186,10 @@ char* kari_inspect(kari_value_t* value);
 char* kari_str(kari_value_t* value);
 size_t kari_identifier_uniqid(char* identifier);
 
-static inline kari_value_t* kari_create_number(double number)
+static inline kari_value_t* kari_create_number(kari_native_float_t number)
 {
-    return (kari_value_t*)(*(uint64_t*)&number | 1);
+    size_t* s = (size_t*)(void*)&number;
+    return (kari_value_t*)(*s | 1);
 }
 kari_string_t* kari_create_string(char* str);
 kari_array_t* kari_create_array();
