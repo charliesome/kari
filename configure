@@ -75,7 +75,7 @@ clean:
 	find . | grep gmon.out | xargs rm -f
 
 repl: libkari.a repl/.startup.kari.inc repl/ikari.o
-	$(CC) $(CFLAGS) -lm -lgc -o ikari src/*.o src/*/*.o repl/*.o
+	$(CC) $(CFLAGS) -o ikari src/*.o src/*/*.o repl/*.o -lm -lgc
 
 repl/%.o: repl/%.c inc/*.h
 
