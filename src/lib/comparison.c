@@ -11,7 +11,7 @@
 K_FN(_eq_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(K_TYPE_OF(argument) != oth->type) {
+    if(K_TYPE_OF(argument) != K_TYPE_OF(oth)) {
         return kari_false();
     }
     switch(K_TYPE_OF(argument)) {
@@ -51,7 +51,7 @@ K_FN(eq)
 K_FN(_lt_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(K_TYPE_OF(argument) != oth->type) {
+    if(K_TYPE_OF(argument) != K_TYPE_OF(oth)) {
         return kari_false();
     }
     switch(K_TYPE_OF(argument)) {
@@ -71,7 +71,7 @@ K_FN(lt)
 K_FN(_lte_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(K_TYPE_OF(argument) != oth->type) {
+    if(K_TYPE_OF(argument) != K_TYPE_OF(oth)) {
         return kari_false();
     }
     switch(K_TYPE_OF(argument)) {
@@ -91,7 +91,7 @@ K_FN(lte)
 K_FN(_gt_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(K_TYPE_OF(argument) != oth->type) {
+    if(K_TYPE_OF(argument) != K_TYPE_OF(oth)) {
         return kari_false();
     }
     switch(K_TYPE_OF(argument)) {
@@ -112,7 +112,7 @@ K_FN(gt)
 K_FN(_gte_2)
 {
     kari_value_t* oth = (kari_value_t*)state;
-    if(K_TYPE_OF(argument) != oth->type) {
+    if(K_TYPE_OF(argument) != K_TYPE_OF(oth)) {
         return kari_false();
     }
     switch(K_TYPE_OF(argument)) {

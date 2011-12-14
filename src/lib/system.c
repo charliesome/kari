@@ -94,7 +94,7 @@ K_FN(require)
     inc = arr->items;
     
     for(i = 0; i < inc->count; i++) {
-        if(((kari_value_t*)inc->entries[i])->type != KARI_STRING)
+        if(K_TYPE_OF((kari_value_t*)inc->entries[i]) != KARI_STRING)
             continue;
         tmp = strlen(((kari_string_t*)inc->entries[i])->str);
         buff = (char*)GC_MALLOC(arg_len + tmp + 8);

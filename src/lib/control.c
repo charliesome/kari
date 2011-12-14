@@ -43,7 +43,7 @@ K_FN(_while_2)
         if(tmp == NULL) {
             return NULL;
         }
-        if(tmp->type != KARI_TRUE) {
+        if(K_TYPE_OF(tmp) != KARI_TRUE) {
             break;
         }
         tmp = kari_call(argument, kari_nil(), err);
