@@ -74,6 +74,9 @@ clean:
 	rm -f ikari
 	find . | grep gmon.out | xargs rm -f
 
+install: repl
+	cp ikari /usr/local/bin
+
 repl: libkari.a repl/.startup.kari.inc repl/ikari.o
 	$(CC) $(CFLAGS) -o ikari src/*.o src/*/*.o repl/*.o -lm -lgc
 
