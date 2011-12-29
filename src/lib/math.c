@@ -22,7 +22,7 @@ K_FN(add)
 K_FN(_sub_2)
 {
     KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) - K_GET_NUMBER(state));
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(state) - K_GET_NUMBER(argument));
 }
 K_FN(sub)
 {
@@ -46,7 +46,7 @@ K_FN(mul)
 K_FN(_div_2)
 {
     KASSERT(K_TYPE_OF(argument) == KARI_NUMBER, "Expected number");
-    return (kari_value_t*)kari_create_number(K_GET_NUMBER(argument) / K_GET_NUMBER(state));
+    return (kari_value_t*)kari_create_number(K_GET_NUMBER(state) / K_GET_NUMBER(argument));
 }
 K_FN(div)
 {
