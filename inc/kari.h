@@ -184,7 +184,8 @@ kari_string_t* kari_create_string(char* str);
 kari_array_t* kari_create_array();
 kari_data_t* kari_create_data(void* ptr, size_t tag, void(*finalizer)(void*));
 kari_native_function_t* kari_create_native_function(kari_context_t* context, kari_nfn_t fn, void* state);
-
+void* kari_malloc(size_t len);
+void* kari_realloc(void* ptr, size_t len);
 size_t kari_utf8_strlen(char* s);
 
 #endif

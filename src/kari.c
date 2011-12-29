@@ -284,6 +284,16 @@ kari_data_t* kari_create_data(void* ptr, size_t tag, void(*finalizer)(void*))
     return data;
 }
 
+void* kari_malloc(size_t len)
+{
+    return GC_MALLOC(len);
+}
+
+void* kari_realloc(void* ptr, size_t len)
+{
+    return GC_REALLOC(ptr, len);
+}
+
 size_t kari_utf8_strlen(char* s)
 {
     size_t len = 0;
