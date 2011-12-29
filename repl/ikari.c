@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         execute_mode = true;
         if(argc > 2) {
             file = argv[2];
-            freopen(argv[2], "r", stdin);
+            stdin = freopen(argv[2], "r", stdin);
         }
     }
     

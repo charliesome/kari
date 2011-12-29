@@ -49,7 +49,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                         lookup_ctx = lookup_ctx->parent;
                     }
                     *err = (char*)GC_MALLOC(64 + ((kari_identifier_token_t*)tokens[i])->len + strlen(tokens[i]->file));
-                    sprintf(*err, "Undefined identifier '%s' at %s:%lu", ((kari_identifier_token_t*)tokens[i])->str, tokens[i]->file, tokens[i]->line);
+                    sprintf(*err, "Undefined identifier '%s' at %s:%u", ((kari_identifier_token_t*)tokens[i])->str, tokens[i]->file, (unsigned int)tokens[i]->line);
                     return NULL;
                     found_value:
                     if(i + 1 < token_count && tokens[i + 1]->type == KARI_TOK_MEMBER_ACCESS_STR) {
@@ -94,7 +94,7 @@ kari_value_t* kari_execute(kari_context_t* ctx, kari_token_t** tokens, size_t to
                 case KARI_TOK_MEMBER_ACCESS_INT:
                     if(value == NULL || K_TYPE_OF(value) != KARI_ARRAY) {
                         *err = (char*)GC_MALLOC(128 + strlen(tokens[i]->file));
-                        sprintf(*err, "Attempted to access index from a non-array value at %s:%lu", tokens[i]->file, tokens[i]->line);
+                        sprintf(*err, "Attempted to access index from a non-array value at %s:%u", tokens[i]->file, (unsigned int)tokens[i]->line);
                         return NULL;
                     }
                     if(((kari_number_token_t*)tokens[i])->number < 0) {

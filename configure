@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
 
+$custom_flags = shift;
+
 sub compile_test {
 	($what, $src, $switches) = @_;
 	print "checking for $what... ";
-	if(system "echo '$src\nint main(){}' | cc -Werror -o /dev/null $switches -xc - 2>/dev/null") {
+	if(system "echo '$src' | cc -Werror -o /dev/null $switches $custom_flags -xc - 2>/dev/null") {
 		print "no\n";
 		0;
 	} else {
@@ -12,15 +14,39 @@ sub compile_test {
 	}
 };
 
+sub eval_test {
+	($what, $src) = @_;
+	print "checking if $what... ";
+	system "echo 'int main() { return (!($src)); }' | cc $custom_flags -Werror -o _tmp_binary -xc - 2>/dev/null";
+	if(system "./_tmp_binary") {
+		print "no\n";
+		unlink "_tmp_binary";
+		0;
+	} else {
+		print "yes\n";
+		unlink "_tmp_binary";
+		1;
+	}
+};
+		
+
+# check which floating type fits in a pointer on arch
+if(eval_test "pointer size is the same as double size", "sizeof(void*) == sizeof(double)") {
+	$floating_switch = "-DK_SIZEOF_DOUBLE_EQ_POINTER";
+} elsif(eval_test "pointer size is the same as float size", "sizeof(void*) == sizeof(float)") {
+	$floating_switch = "-DK_SIZEOF_FLOAT_EQ_POINTER";
+} else {
+	die "\n*** architecture seems alien, please file a bug at http://github.com/charliesome/kari\n";
+}
 
 # attempt to see if boehm is installed
-compile_test "-lgc", "", "-lgc" or die "\n*** libgc not found!\n";
+compile_test "-lgc", "int main(){}", "-lgc" or die "\n*** libgc not found!\n";
 
 # attempt to find gc.h
 $inc_switch = "";
-unless(compile_test "gc.h", "#include <gc.h>") {
+unless(compile_test "gc.h", "#include <gc.h>\n int main(){}") {
 	for $prefix ("/usr/include", "/usr/include/gc", "/usr/local/include", "/usr/local/include/gc", "/opt/local/include", "/opt/local/include/gc") {
-		if(compile_test "$prefix/gc.h", "#include <gc.h>", "-I$prefix") {
+		if(compile_test "$prefix/gc.h", "#include <gc.h>\n int main(){}", "-I$prefix") {
 			$inc_switch = "-I$prefix";
 			last;
 		}
@@ -30,14 +56,14 @@ unless(compile_test "gc.h", "#include <gc.h>") {
 
 open(MAKEFILE, ">Makefile");
 
-print MAKEFILE "CFLAGS=-std=c99 -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch\n";
+print MAKEFILE "CFLAGS=-std=c99 -g -p -pg -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch $floating_switch $custom_flags\n";
 print MAKEFILE <<'EOF';
 all: libkari.a repl
 
 release:
 	@make clean
 EOF
-print MAKEFILE "	make all CFLAGS='-std=c99 -fomit-frame-pointer -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch' \n";
+print MAKEFILE "	make all CFLAGS='-std=c99 -fomit-frame-pointer -O3 -pedantic -Wall -Wshadow -Wpointer-arith  -Wcast-qual -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -iquote inc/ $inc_switch $floating_switch $custom_flags' \n";
 print MAKEFILE <<'EOF';
 clean:
 	rm -f src/*.o
@@ -48,8 +74,11 @@ clean:
 	rm -f ikari
 	find . | grep gmon.out | xargs rm -f
 
+install: release
+	cp ikari /usr/local/bin/ikari
+
 repl: libkari.a repl/.startup.kari.inc repl/ikari.o
-	$(CC) $(CFLAGS) -lm -lgc -o ikari src/*.o src/*/*.o repl/*.o
+	$(CC) $(CFLAGS) -o ikari src/*.o src/*/*.o repl/*.o -lm -lgc
 
 repl/%.o: repl/%.c inc/*.h
 

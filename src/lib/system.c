@@ -30,6 +30,20 @@ K_FN(str)
     return (kari_value_t*)kari_create_string(kari_str(argument));
 }
 
+K_FN(num)
+{
+    kari_native_float_t d;
+    #ifdef K_SIZEOF_DOUBLE_EQ_POINTER
+        char* fmt = "%lf";
+    #else
+        #ifdef K_SIZEOF_FLOAT_EQ_POINTER
+            char* fmt = "%f";
+        #endif
+    #endif
+    sscanf(kari_str(argument), fmt, &d);
+    return kari_create_number(d);
+}
+
 /* put */
 K_FN(put)
 {
@@ -80,7 +94,7 @@ K_FN(require)
     inc = arr->items;
     
     for(i = 0; i < inc->count; i++) {
-        if(((kari_value_t*)inc->entries[i])->type != KARI_STRING)
+        if(K_TYPE_OF((kari_value_t*)inc->entries[i]) != KARI_STRING)
             continue;
         tmp = strlen(((kari_string_t*)inc->entries[i])->str);
         buff = (char*)GC_MALLOC(arg_len + tmp + 8);

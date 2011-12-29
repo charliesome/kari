@@ -23,7 +23,7 @@ size_t kari_parse(char* filename, char* source, kari_token_t*** tokens_out, char
     kari_dict_token_t* tmp_dict;
     kari_dict_entry_token_t* tmp_dent = NULL;
     char *tmp_s, *tmp_endptr;
-    double d;
+    kari_native_float_t d;
     bool is_after_assignment = false;
     bool is_reference = false;
     bool is_member_access = false;
